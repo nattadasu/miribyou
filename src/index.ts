@@ -7,6 +7,8 @@ import {
   fetchFromMalApi,
   parseMalApiAnime,
   parseMalApiManga,
+  mergeAnimeData,
+  mergeMangaData,
   ANIME_FIELDS,
   MANGA_FIELDS,
 } from "./mal_api";
@@ -197,7 +199,14 @@ app.get("/anime/:id", async (c) => {
         fields: ANIME_FIELDS,
         nsfw: "true",
       });
-      const data = parseMalApiAnime(apiResponse);
+      let data = parseMalApiAnime(apiResponse);
+      try {
+        const html = await fetchMAL(`/anime/${id}`);
+        const scraped = parseAnime(html);
+        data = mergeAnimeData(data, scraped);
+      } catch (e) {
+        // Silently fallback to API-only if scraper fails
+      }
       // Remove heavy fields for non-full endpoint
       delete data.relations;
       delete data.external;
@@ -234,7 +243,14 @@ app.get("/anime/:id/full", async (c) => {
         fields: ANIME_FIELDS,
         nsfw: "true",
       });
-      const data = parseMalApiAnime(apiResponse);
+      let data = parseMalApiAnime(apiResponse);
+      try {
+        const html = await fetchMAL(`/anime/${id}`);
+        const scraped = parseAnime(html);
+        data = mergeAnimeData(data, scraped);
+      } catch (e) {
+        // Silently fallback to API-only if scraper fails
+      }
       return c.json({ data });
     } catch (error: any) {
       const status = error.message.includes("404") ? 404 : 500;
@@ -582,7 +598,14 @@ app.get("/manga/:id", async (c) => {
         fields: MANGA_FIELDS,
         nsfw: "true",
       });
-      const data = parseMalApiManga(apiResponse);
+      let data = parseMalApiManga(apiResponse);
+      try {
+        const html = await fetchMAL(`/manga/${id}`);
+        const scraped = parseManga(html);
+        data = mergeMangaData(data, scraped);
+      } catch (e) {
+        // Silently fallback to API-only if scraper fails
+      }
       // Remove heavy fields for non-full endpoint
       delete data.relations;
       delete data.external;
@@ -615,7 +638,14 @@ app.get("/manga/:id/full", async (c) => {
         fields: MANGA_FIELDS,
         nsfw: "true",
       });
-      const data = parseMalApiManga(apiResponse);
+      let data = parseMalApiManga(apiResponse);
+      try {
+        const html = await fetchMAL(`/manga/${id}`);
+        const scraped = parseManga(html);
+        data = mergeMangaData(data, scraped);
+      } catch (e) {
+        // Silently fallback to API-only if scraper fails
+      }
       return c.json({ data });
     } catch (error: any) {
       const status = error.message.includes("404") ? 404 : 500;

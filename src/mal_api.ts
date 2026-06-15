@@ -516,3 +516,51 @@ export function parseMalApiManga(node: any): Manga {
     external: [],
   };
 }
+
+export function mergeAnimeData(api: Anime, scraped: Anime): Anime {
+  return {
+    ...scraped,
+    ...api,
+    images: api.images?.jpg?.image_url ? api.images : scraped.images,
+    trailer: (api.trailer?.youtube_id) ? api.trailer : scraped.trailer,
+    titles: api.titles && api.titles.length > 1 ? api.titles : scraped.titles,
+    title: api.title || scraped.title,
+    title_english: api.title_english || scraped.title_english,
+    title_japanese: api.title_japanese || scraped.title_japanese,
+    title_synonyms: api.title_synonyms && api.title_synonyms.length > 0 ? api.title_synonyms : scraped.title_synonyms,
+    broadcast: api.broadcast?.string ? api.broadcast : scraped.broadcast,
+    producers: api.producers && api.producers.length > 0 ? api.producers : scraped.producers,
+    licensors: api.licensors && api.licensors.length > 0 ? api.licensors : scraped.licensors,
+    studios: api.studios && api.studios.length > 0 ? api.studios : scraped.studios,
+    genres: api.genres && api.genres.length > 0 ? api.genres : scraped.genres,
+    explicit_genres: api.explicit_genres && api.explicit_genres.length > 0 ? api.explicit_genres : scraped.explicit_genres,
+    themes: api.themes && api.themes.length > 0 ? api.themes : scraped.themes,
+    demographics: api.demographics && api.demographics.length > 0 ? api.demographics : scraped.demographics,
+    relations: api.relations && api.relations.length > 0 ? api.relations : scraped.relations,
+    theme: api.theme?.openings?.length ? api.theme : scraped.theme,
+    external: api.external && api.external.length > 0 ? api.external : scraped.external,
+    streaming: api.streaming && api.streaming.length > 0 ? api.streaming : scraped.streaming,
+  };
+}
+
+export function mergeMangaData(api: Manga, scraped: Manga): Manga {
+  return {
+    ...scraped,
+    ...api,
+    images: api.images?.jpg?.image_url ? api.images : scraped.images,
+    titles: api.titles && api.titles.length > 1 ? api.titles : scraped.titles,
+    title: api.title || scraped.title,
+    title_english: api.title_english || scraped.title_english,
+    title_japanese: api.title_japanese || scraped.title_japanese,
+    title_synonyms: api.title_synonyms && api.title_synonyms.length > 0 ? api.title_synonyms : scraped.title_synonyms,
+    authors: api.authors && api.authors.length > 0 ? api.authors : scraped.authors,
+    serializations: api.serializations && api.serializations.length > 0 ? api.serializations : scraped.serializations,
+    genres: api.genres && api.genres.length > 0 ? api.genres : scraped.genres,
+    explicit_genres: api.explicit_genres && api.explicit_genres.length > 0 ? api.explicit_genres : scraped.explicit_genres,
+    themes: api.themes && api.themes.length > 0 ? api.themes : scraped.themes,
+    demographics: api.demographics && api.demographics.length > 0 ? api.demographics : scraped.demographics,
+    relations: api.relations && api.relations.length > 0 ? api.relations : scraped.relations,
+    external: api.external && api.external.length > 0 ? api.external : scraped.external,
+  };
+}
+
