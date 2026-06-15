@@ -29,20 +29,23 @@ export function parseAnimeSearch(html: string): any {
         .trim();
 
       const type = $tr.find("td:nth-child(3)").text().trim();
-      const episodes =
-        parseInt($tr.find("td:nth-child(4)").text().trim() || "0") || null;
-      const score =
-        parseFloat($tr.find("td:nth-child(5)").text().trim() || "0") || null;
+      const episodesStr = $tr.find("td:nth-child(4)").text().trim();
+      const episodes = episodesStr === "-" ? null : parseInt(episodesStr) || null;
+      
+      const scoreStr = $tr.find("td:nth-child(5)").text().trim();
+      const score = scoreStr === "-" ? null : parseFloat(scoreStr) || null;
 
       const startDate = $tr.find("td:nth-child(6)").text().trim();
       const endDate = $tr.find("td:nth-child(7)").text().trim();
-      const members =
-        parseInt(
-          $tr.find("td:nth-child(8)").text().trim().replace(/,/g, "") || "0",
-        ) || null;
+      const membersStr = $tr.find("td:nth-child(8)").text().trim().replace(/,/g, "");
+      const members = membersStr === "-" ? null : parseInt(membersStr) || null;
       const rating = $tr.find("td:nth-child(9)").text().trim() || null;
 
-      const aired = parseMalDate(`${startDate} to ${endDate}`);
+      const aired = parseMalDate(
+        startDate && endDate && startDate !== "-" && endDate !== "-" 
+          ? `${startDate} to ${endDate}` 
+          : (startDate && startDate !== "-" ? startDate : null)
+      );
 
       return {
         mal_id: parseInt(href.split("/").slice(-2, -1)[0] || "0"),
@@ -59,14 +62,60 @@ export function parseAnimeSearch(html: string): any {
             large_image_url: imageUrl.replace(".jpg", "l.webp"),
           },
         },
+        trailer: {
+          youtube_id: null,
+          url: null,
+          embed_url: null,
+          images: {
+            image_url: null,
+            small_image_url: null,
+            medium_image_url: null,
+            large_image_url: null,
+            maximum_image_url: null,
+          },
+        },
+        approved: true,
+        titles: [
+          {
+            type: "Default",
+            title: title,
+          },
+        ],
         title,
-        synopsis,
+        title_english: null,
+        title_japanese: null,
+        title_synonyms: [],
         type,
+        source: null,
         episodes,
-        score,
+        status: episodes === 1 ? "Finished Airing" : null,
+        airing: false,
         aired,
-        members,
+        duration: null,
         rating,
+        score,
+        scored_by: null,
+        rank: null,
+        popularity: null,
+        members,
+        favorites: null,
+        synopsis,
+        background: null,
+        season: null,
+        year: null,
+        broadcast: {
+          day: null,
+          time: null,
+          timezone: null,
+          string: null,
+        },
+        producers: [],
+        licensors: [],
+        studios: [],
+        genres: [],
+        explicit_genres: [],
+        themes: [],
+        demographics: [],
       };
     })
     .get();
@@ -84,26 +133,14 @@ export function parseAnimeSearch(html: string): any {
       if (!isNaN(pageNum)) last_visible_page = pageNum;
     }
   }
-  // If we find a link that contains text "Next" or if there's a link after the current page number
-  const hasNextPage =
-    paginationDiv.find('a:contains("Next"), a:contains(">")').length > 0 ||
-    paginationDiv.text().match(/\[\d+\]\s*<a/) !== null ||
-    (paginationDiv.find("span.bgColor1").length > 0 &&
-      paginationDiv.find("span.bgColor1").nextAll("a").length > 0) ||
-    (paginationDiv.text().includes("[") &&
-      paginationDiv.text().split("[")[1].includes("]") &&
-      paginationDiv.text().split("]")[1].includes("href"));
-
-  // Real check for MAL's specific search pagination
-  const text = paginationDiv.text();
-  const nextMatch = text.match(/\[(\d+)\]\s*<a/); // This won't work on text() because it strips tags
 
   const hasNext = paginationDiv
     .find("a")
     .map((_, el) => {
-      const page = parseInt($(el).text());
-      const current = parseInt(text.match(/\[(\d+)\]/)?.[1] || "1");
-      return page > current;
+      const pageText = $(el).text();
+      const page = parseInt(pageText);
+      const current = parseInt(paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1");
+      return page > current || pageText.includes("Next") || pageText.includes(">");
     })
     .get()
     .some((v) => v);

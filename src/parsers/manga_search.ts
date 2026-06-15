@@ -21,21 +21,34 @@ export function parseMangaSearch(html: string): any {
 
     const type = $row.find("td:nth-child(3)").text().trim();
 
-    const volumes =
-      parseInt($row.find("td:nth-child(4)").text().trim() || "0") || null;
-    const score =
-      parseFloat($row.find("td:nth-child(5)").text().trim() || "0") || null;
+    const volumesStr = $row.find("td:nth-child(4)").text().trim();
+    const volumes = volumesStr === "-" ? null : parseInt(volumesStr) || null;
+    
+    const scoreStr = $row.find("td:nth-child(5)").text().trim();
+    const score = scoreStr === "-" ? null : parseFloat(scoreStr) || null;
 
     const startDate = $row.find("td:nth-child(6)").text().trim();
     const endDate = $row.find("td:nth-child(7)").text().trim();
-    const members =
-      parseInt(
-        $row.find("td:nth-child(8)").text().trim().replace(/,/g, "") || "0",
-      ) || null;
-    const chapters =
-      parseInt($row.find("td:nth-child(9)").text().trim() || "0") || null;
+    const membersStr = $row.find("td:nth-child(8)").text().trim().replace(/,/g, "");
+    const members = membersStr === "-" ? null : parseInt(membersStr) || null;
+    
+    const chaptersStr = $row.find("td:nth-child(9)").text().trim();
+    const chapters = chaptersStr === "-" ? null : parseInt(chaptersStr) || null;
 
-    const published = parseMalDate(`${startDate} to ${endDate}`);
+    const published = parseMalDate(
+      startDate && endDate && startDate !== "-" && endDate !== "-" 
+        ? `${startDate} to ${endDate}` 
+        : (startDate && startDate !== "-" ? startDate : null)
+    );
+
+    const synopsis = $row
+      .find("td:nth-child(2) .pt4")
+      .clone()
+      .find("a")
+      .remove()
+      .end()
+      .text()
+      .trim();
 
     if (title) {
       results.push({
@@ -53,14 +66,38 @@ export function parseMangaSearch(html: string): any {
             large_image_url: imageUrl.replace(".jpg", "l.webp"),
           },
         },
+        approved: true,
+        titles: [
+          {
+            type: "Default",
+            title: title,
+          },
+        ],
         title,
+        title_english: null,
+        title_japanese: null,
+        title_synonyms: [],
         type,
+        source: null,
         volumes,
         chapters,
-        score,
-        scored: score,
+        airing: false,
         published,
+        status: null,
+        score,
+        scored_by: null,
+        rank: null,
+        popularity: null,
         members,
+        favorites: null,
+        synopsis,
+        background: null,
+        authors: [],
+        serializations: [],
+        genres: [],
+        explicit_genres: [],
+        themes: [],
+        demographics: [],
       });
     }
   });
@@ -79,13 +116,13 @@ export function parseMangaSearch(html: string): any {
     }
   }
 
-  const text = paginationDiv.text();
   const hasNext = paginationDiv
     .find("a")
     .map((_, el) => {
-      const page = parseInt($(el).text());
-      const current = parseInt(text.match(/\[(\d+)\]/)?.[1] || "1");
-      return page > current;
+      const pageText = $(el).text();
+      const page = parseInt(pageText);
+      const current = parseInt(paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1");
+      return page > current || pageText.includes("Next") || pageText.includes(">");
     })
     .get()
     .some((v) => v);

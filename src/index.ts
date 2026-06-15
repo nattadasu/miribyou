@@ -31,6 +31,7 @@ import { parseUserSearch } from "./parsers/user_search";
 import { parseFriends } from "./parsers/friends";
 import { parseUserClubs } from "./parsers/user_clubs";
 import { parseHistory } from "./parsers/history";
+import { parseHover } from "./parsers/hover";
 
 const app = new Hono().basePath("/v4");
 
@@ -79,17 +80,52 @@ app.get("/", async (c) => {
 
 app.get("/anime", async (c) => {
   const q = c.req.query("q");
+  const page = parseInt(c.req.query("page") || "1");
+  const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
+
   if (!q) {
     return c.json(
       jikanError(400, 'Query parameter "q" is required for search'),
       400,
     );
   }
+  
+  const show = (page - 1) * 50;
+
   try {
     const html = await fetchMAL(
-      `/anime.php?q=${encodeURIComponent(q)}&type=0&score=0&status=0&p=0&r=0&sm=0&sd=0&sy=0&em=0&ed=0&ey=0&c[]=a&c[]=b&c[]=c&c[]=d&c[]=e&c[]=f&c[]=g`,
+      `/anime.php?q=${encodeURIComponent(q)}&show=${show}&type=0&score=0&status=0&p=0&r=0&sm=0&sd=0&sy=0&em=0&ed=0&ey=0&c[]=a&c[]=b&c[]=c&c[]=d&c[]=e&c[]=f&c[]=g`,
     );
     const data = parseAnimeSearch(html);
+    data.pagination.current_page = page;
+
+    if (hover && data.data.length > 0) {
+      await Promise.all(
+        data.data.map(async (item: any) => {
+          try {
+            const hoverHtml = await fetchMAL(`/anime/${item.mal_id}/hover`, {
+              "X-Requested-With": "XMLHttpRequest"
+            });
+            const hoverData = parseHover(hoverHtml);
+            
+            if (hoverData.year) item.year = hoverData.year;
+            if (hoverData.synopsis && item.synopsis.endsWith("...")) item.synopsis = hoverData.synopsis;
+            if (hoverData.genres.length) item.genres = hoverData.genres;
+            if (hoverData.themes.length) item.themes = hoverData.themes;
+            if (hoverData.demographics.length) item.demographics = hoverData.demographics;
+            if (hoverData.status) item.status = hoverData.status;
+            if (hoverData.score !== null) item.score = hoverData.score;
+            if (hoverData.scored_by !== null) item.scored_by = hoverData.scored_by;
+            if (hoverData.rank !== null) item.rank = hoverData.rank;
+            if (hoverData.popularity !== null) item.popularity = hoverData.popularity;
+            if (hoverData.members !== null) item.members = hoverData.members;
+          } catch (e) {
+            // Silently fail for individual hover requests
+          }
+        })
+      );
+    }
+
     return c.json(data);
   } catch (error: any) {
     return c.json(jikanError(500, error.message), 500);
@@ -346,17 +382,52 @@ app.get("/anime/:id/streaming", async (c) => {
 
 app.get("/manga", async (c) => {
   const q = c.req.query("q");
+  const page = parseInt(c.req.query("page") || "1");
+  const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
+
   if (!q) {
     return c.json(
       jikanError(400, 'Query parameter "q" is required for search'),
       400,
     );
   }
+  
+  const show = (page - 1) * 50;
+
   try {
     const html = await fetchMAL(
-      `/manga.php?q=${encodeURIComponent(q)}&type=0&score=0&status=0&mid=0&sm=0&sd=0&sy=0&em=0&ed=0&ey=0&c[]=a&c[]=b&c[]=c&c[]=d&c[]=e&c[]=f&c[]=i`,
+      `/manga.php?q=${encodeURIComponent(q)}&show=${show}&type=0&score=0&status=0&mid=0&sm=0&sd=0&sy=0&em=0&ed=0&ey=0&c[]=a&c[]=b&c[]=c&c[]=d&c[]=e&c[]=f&c[]=i`,
     );
     const data = parseMangaSearch(html);
+    data.pagination.current_page = page;
+
+    if (hover && data.data.length > 0) {
+      await Promise.all(
+        data.data.map(async (item: any) => {
+          try {
+            const hoverHtml = await fetchMAL(`/manga/${item.mal_id}/hover`, {
+              "X-Requested-With": "XMLHttpRequest"
+            });
+            const hoverData = parseHover(hoverHtml);
+            
+            if (hoverData.year) item.year = hoverData.year;
+            if (hoverData.synopsis && item.synopsis.endsWith("...")) item.synopsis = hoverData.synopsis;
+            if (hoverData.genres.length) item.genres = hoverData.genres;
+            if (hoverData.themes.length) item.themes = hoverData.themes;
+            if (hoverData.demographics.length) item.demographics = hoverData.demographics;
+            if (hoverData.status) item.status = hoverData.status;
+            if (hoverData.score !== null) item.score = hoverData.score;
+            if (hoverData.scored_by !== null) item.scored_by = hoverData.scored_by;
+            if (hoverData.rank !== null) item.rank = hoverData.rank;
+            if (hoverData.popularity !== null) item.popularity = hoverData.popularity;
+            if (hoverData.members !== null) item.members = hoverData.members;
+          } catch (e) {
+            // Silently fail for individual hover requests
+          }
+        })
+      );
+    }
+
     return c.json(data);
   } catch (error: any) {
     return c.json(jikanError(500, error.message), 500);
