@@ -45,7 +45,12 @@ export function parseUserSearch(html: string): any {
                 .replace(".jpg", ".webp"),
             },
           },
-          last_online: toIsoDate($(".user-status li:contains('Last Online')").text().replace("Last Online", "").trim()),
+          last_online: toIsoDate(
+            $(".user-status li:contains('Last Online')")
+              .text()
+              .replace("Last Online", "")
+              .trim(),
+          ),
         },
       ],
     };
@@ -63,7 +68,10 @@ export function parseUserSearch(html: string): any {
 
     if (!username) return;
 
-    let imageUrl = cleanImageUrl($row.find("td:nth-child(1) img").attr("data-src") || $row.find("td:nth-child(1) img").attr("src"));
+    let imageUrl = cleanImageUrl(
+      $row.find("td:nth-child(1) img").attr("data-src") ||
+        $row.find("td:nth-child(1) img").attr("src"),
+    );
     const lastOnlineText = $row.find("td:nth-child(3)").text().trim();
 
     results.push({
@@ -133,8 +141,12 @@ export function parseUserSearch(html: string): any {
     .map((_, el) => {
       const pageText = $(el).text();
       const page = parseInt(pageText);
-      const current = parseInt(paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1");
-      return page > current || pageText.includes("Next") || pageText.includes(">");
+      const current = parseInt(
+        paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1",
+      );
+      return (
+        page > current || pageText.includes("Next") || pageText.includes(">")
+      );
     })
     .get()
     .some((v) => v);

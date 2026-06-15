@@ -1,6 +1,9 @@
 import { MAL_BASE_URL } from "./constants";
 
-export async function fetchMAL(path: string, headers: Record<string, string> = {}): Promise<string> {
+export async function fetchMAL(
+  path: string,
+  headers: Record<string, string> = {},
+): Promise<string> {
   const url = `https://myanimelist.net${path}`;
   const response = await fetch(url, {
     headers: {
@@ -59,7 +62,10 @@ export function parseMalDate(dateStr: string | null) {
   };
 }
 
-export function resolveSearchDate(dateStr: string | null, hoverYear?: number | null) {
+export function resolveSearchDate(
+  dateStr: string | null,
+  hoverYear?: number | null,
+) {
   if (!dateStr || dateStr === "Unknown" || dateStr === "-" || dateStr === "?") {
     return {
       from: null,
@@ -76,9 +82,14 @@ export function resolveSearchDate(dateStr: string | null, hoverYear?: number | n
   const fromStr = parts[0]?.trim();
   const toStr = parts[1]?.trim();
 
-  const parseYY = (str: string, refYear: number | null | undefined, isEndDate: boolean) => {
-    if (!str || str === "?" || str === "-") return { day: null, month: null, year: null, iso: null, formatted: "?" };
-    
+  const parseYY = (
+    str: string,
+    refYear: number | null | undefined,
+    isEndDate: boolean,
+  ) => {
+    if (!str || str === "?" || str === "-")
+      return { day: null, month: null, year: null, iso: null, formatted: "?" };
+
     const match = str.match(/(\d{2}|\?\?)-(\d{2}|\?\?)-(\d{2}|\?\?)/);
     if (!match) {
       const fallback = parseSingleDate(str);
@@ -102,8 +113,8 @@ export function resolveSearchDate(dateStr: string | null, hoverYear?: number | n
           if (year < refYear) year += 100;
         } else {
           const diff1 = Math.abs(year - refYear);
-          const diff2 = Math.abs((year + 100) - refYear);
-          const diff3 = Math.abs((year - 100) - refYear);
+          const diff2 = Math.abs(year + 100 - refYear);
+          const diff3 = Math.abs(year - 100 - refYear);
           if (diff2 < diff1 && diff2 < diff3) year += 100;
           else if (diff3 < diff1 && diff3 < diff2) year -= 100;
         }
@@ -123,10 +134,14 @@ export function resolveSearchDate(dateStr: string | null, hoverYear?: number | n
       const isoD = d ? d.toString().padStart(2, "0") : "01";
       iso = `${year}-${isoM}-${isoD}T00:00:00+00:00`;
     }
-    
+
     const fM = m ? m.toString().padStart(2, "0") : "??";
     const fD = d ? d.toString().padStart(2, "0") : "??";
-    const fY = year ? year.toString() : (yShort !== null ? yShort.toString().padStart(2, "0") : "??");
+    const fY = year
+      ? year.toString()
+      : yShort !== null
+        ? yShort.toString().padStart(2, "0")
+        : "??";
     const formatted = `${fM}-${fD}-${fY}`;
 
     return { day: d, month: m, year, iso, formatted };

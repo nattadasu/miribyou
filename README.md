@@ -52,11 +52,12 @@ All endpoints use the `GET` method and are prefixed with `/v4`.
 ### Search Parameters
 
 For `/v4/anime` and `/v4/manga` search endpoints, the following optional parameters are available:
+
 - `?page=n` - Paginate through search results (50 items per page).
-- `?hover=1` - **Opt-in Extended Metadata.** MAL's search pages do not natively expose all data fields. Enabling `hover=1` commands the API to fetch the hidden "hover popup" for every single result to achieve true Jikan v4 parity (resolving exact dates, `scored_by`, `rank`, `popularity`, etc.). 
+- `?hover=1` - **Opt-in Extended Metadata.** MAL's search pages do not natively expose all data fields. Enabling `hover=1` commands the API to fetch the hidden "hover popup" for every single result to achieve true Jikan v4 parity (resolving exact dates, `scored_by`, `rank`, `popularity`, etc.).
 
 > [!WARNING]
-> **Use `?hover=1` sparingly.** It fires concurrent background requests for *every* item in the search result. Not only does this drastically increase response times, but some hover data on MAL may occasionally be unavailable, incomplete, or partially incorrect.
+> **Use `?hover=1` sparingly.** It fires concurrent background requests for _every_ item in the search result. Not only does this drastically increase response times, but some hover data on MAL may occasionally be unavailable, incomplete, or partially incorrect.
 
 ### Anime
 

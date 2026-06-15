@@ -30,20 +30,28 @@ export function parseAnimeSearch(html: string): any {
 
       const type = $tr.find("td:nth-child(3)").text().trim();
       const episodesStr = $tr.find("td:nth-child(4)").text().trim();
-      const episodes = episodesStr === "-" ? null : parseInt(episodesStr) || null;
-      
+      const episodes =
+        episodesStr === "-" ? null : parseInt(episodesStr) || null;
+
       const scoreStr = $tr.find("td:nth-child(5)").text().trim();
       const score = scoreStr === "-" ? null : parseFloat(scoreStr) || null;
 
       const startDate = $tr.find("td:nth-child(6)").text().trim();
       const endDate = $tr.find("td:nth-child(7)").text().trim();
-      const membersStr = $tr.find("td:nth-child(8)").text().trim().replace(/,/g, "");
+      const membersStr = $tr
+        .find("td:nth-child(8)")
+        .text()
+        .trim()
+        .replace(/,/g, "");
       const members = membersStr === "-" ? null : parseInt(membersStr) || null;
       const rating = $tr.find("td:nth-child(9)").text().trim() || null;
 
-      const rawAired = startDate && endDate && startDate !== "-" && endDate !== "-" 
-          ? `${startDate} to ${endDate}` 
-          : (startDate && startDate !== "-" ? startDate : null);
+      const rawAired =
+        startDate && endDate && startDate !== "-" && endDate !== "-"
+          ? `${startDate} to ${endDate}`
+          : startDate && startDate !== "-"
+            ? startDate
+            : null;
       const aired = resolveSearchDate(rawAired);
 
       return {
@@ -139,8 +147,12 @@ export function parseAnimeSearch(html: string): any {
     .map((_, el) => {
       const pageText = $(el).text();
       const page = parseInt(pageText);
-      const current = parseInt(paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1");
-      return page > current || pageText.includes("Next") || pageText.includes(">");
+      const current = parseInt(
+        paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1",
+      );
+      return (
+        page > current || pageText.includes("Next") || pageText.includes(">")
+      );
     })
     .get()
     .some((v) => v);

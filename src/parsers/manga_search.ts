@@ -23,7 +23,7 @@ export function parseMangaSearch(html: string): any {
 
     const volumesStr = $row.find("td:nth-child(4)").text().trim();
     const volumes = volumesStr === "-" ? null : parseInt(volumesStr) || null;
-    
+
     const chaptersStr = $row.find("td:nth-child(5)").text().trim();
     const chapters = chaptersStr === "-" ? null : parseInt(chaptersStr) || null;
 
@@ -32,12 +32,19 @@ export function parseMangaSearch(html: string): any {
 
     const startDate = $row.find("td:nth-child(7)").text().trim();
     const endDate = $row.find("td:nth-child(8)").text().trim();
-    const membersStr = $row.find("td:nth-child(9)").text().trim().replace(/,/g, "");
+    const membersStr = $row
+      .find("td:nth-child(9)")
+      .text()
+      .trim()
+      .replace(/,/g, "");
     const members = membersStr === "-" ? null : parseInt(membersStr) || null;
 
-    const rawPublished = startDate && endDate && startDate !== "-" && endDate !== "-" 
-        ? `${startDate} to ${endDate}` 
-        : (startDate && startDate !== "-" ? startDate : null);
+    const rawPublished =
+      startDate && endDate && startDate !== "-" && endDate !== "-"
+        ? `${startDate} to ${endDate}`
+        : startDate && startDate !== "-"
+          ? startDate
+          : null;
     const published = resolveSearchDate(rawPublished);
 
     const synopsis = $row
@@ -121,8 +128,12 @@ export function parseMangaSearch(html: string): any {
     .map((_, el) => {
       const pageText = $(el).text();
       const page = parseInt(pageText);
-      const current = parseInt(paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1");
-      return page > current || pageText.includes("Next") || pageText.includes(">");
+      const current = parseInt(
+        paginationDiv.text().match(/\[(\d+)\]/)?.[1] || "1",
+      );
+      return (
+        page > current || pageText.includes("Next") || pageText.includes(">")
+      );
     })
     .get()
     .some((v) => v);
