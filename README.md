@@ -18,7 +18,7 @@ Miribyou is a lightweight MAL (MyAnimeList) scraper built for performance and ac
 
 ## API Information
 
-- **Version:** `4.1.0` (Jikan Parity)
+- **Version:** `4.1.1` (Jikan Parity)
 - **Discord:** [Join our Discord](https://nttds.my.id/discord)
 
 ## Deployment
