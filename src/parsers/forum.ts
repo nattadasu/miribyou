@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { ForumTopic } from "../models/forum";
 import { MAL_BASE_URL } from "../constants";
-import { ensureMalUrl } from "../utils";
+import { ensureMalUrl, toIsoDate } from "../utils";
 
 export function parseForum(html: string): ForumTopic[] {
   const $ = load(html);
@@ -15,7 +15,7 @@ export function parseForum(html: string): ForumTopic[] {
     const url = ensureMalUrl(titleLink.attr("href"));
     const mal_id = parseInt(url.split("topicid=")[1] || "0");
 
-    const date = $element.find("td:nth-child(2) span.lightLink").text().trim();
+    const date = toIsoDate($element.find("td:nth-child(2) span.lightLink").text().trim());
     const authorLink = $element.find("span.forum_postusername a");
     const author_username = authorLink.text().trim();
     const author_url = ensureMalUrl(authorLink.attr("href"));
@@ -30,12 +30,7 @@ export function parseForum(html: string): ForumTopic[] {
     const lastAuthorUrl = ensureMalUrl(lastAuthorLink.attr("href"));
     const lastPostLink = lastPostTd.find("a").last();
     const lastPostUrl = ensureMalUrl(lastPostLink.attr("href"));
-    const lastDate = lastPostTd
-      .text()
-      .replace(lastAuthorUsername, "")
-      .trim()
-      .split("by ")[0]
-      .trim();
+    const lastDate = toIsoDate(lastPostTd.contents().last().text().trim());
 
     topics.push({
       mal_id,

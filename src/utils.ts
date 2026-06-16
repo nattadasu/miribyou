@@ -226,7 +226,32 @@ export function toIsoDate(str: string | null): string | null {
     return new Date().toISOString().split(".")[0] + "+00:00";
   }
 
-  // Handle relative times: "X minutes ago", "X hours ago", "Yesterday, 8:55 PM"
+  // Handle "Today, 8:55 PM"
+  if (str.includes("Today")) {
+    const date = new Date();
+    const timePart = str.split(",")[1]?.trim();
+    if (timePart) {
+      const timeDate = new Date(`${date.toDateString()} ${timePart} UTC`);
+      if (!isNaN(timeDate.getTime()))
+        return timeDate.toISOString().split(".")[0] + "+00:00";
+    }
+    return date.toISOString().split(".")[0] + "+00:00";
+  }
+
+  // Handle "Yesterday, 8:55 PM"
+  if (str.includes("Yesterday")) {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    const timePart = str.split(",")[1]?.trim();
+    if (timePart) {
+      const timeDate = new Date(`${date.toDateString()} ${timePart} UTC`);
+      if (!isNaN(timeDate.getTime()))
+        return timeDate.toISOString().split(".")[0] + "+00:00";
+    }
+    return date.toISOString().split(".")[0] + "+00:00";
+  }
+
+  // Handle relative times: "X minutes ago", "X hours ago", "X days ago"
   const relativeMatch = str.match(/(\d+)\s+(minute|hour|day)s?\s+ago/);
   if (relativeMatch) {
     const amount = parseInt(relativeMatch[1]);
@@ -238,26 +263,16 @@ export function toIsoDate(str: string | null): string | null {
     return date.toISOString().split(".")[0] + "+00:00";
   }
 
-  if (str.includes("Yesterday")) {
-    const date = new Date();
-    date.setDate(date.getDate() - 1);
-    const timePart = str.split(",")[1]?.trim();
-    if (timePart) {
-      // Attempt to parse time
-      const timeDate = new Date(`${date.toDateString()} ${timePart} UTC`);
-      if (!isNaN(timeDate.getTime()))
-        return timeDate.toISOString().split(".")[0] + "+00:00";
-    }
-    return date.toISOString().split(".")[0] + "+00:00";
-  }
-
   try {
     let normalizedDate = str;
     if (!str.includes("T")) {
       if (!str.match(/\d{4}/)) {
         normalizedDate = `${str}, ${new Date().getFullYear()}`;
       }
-      normalizedDate = `${normalizedDate} UTC`;
+      // Check if it has a time but no timezone
+      if (str.includes(":") && !str.match(/[A-Z]{3,}/)) {
+        normalizedDate = `${normalizedDate} UTC`;
+      }
     }
     const d = new Date(normalizedDate);
     return isNaN(d.getTime()) ? null : d.toISOString().split(".")[0] + "+00:00";
