@@ -20,7 +20,7 @@ describe("Index Page", () => {
     const data = (await response.json()) as any;
 
     expect(data.author_url).toBe("https://github.com/nattadasu");
-    expect(data.version).toBe("4.1.3");
+    expect(data.version).toBe("4.1.4");
     expect(data.production_api_url).toBe("http://example.com/v4/");
     expect(data.myanimelist_heartbeat).toBeDefined();
   });
@@ -30,7 +30,7 @@ describe("Index Page", () => {
     const data = (await response.json()) as any;
 
     expect(data.author_url).toBe("https://github.com/nattadasu");
-    expect(data.version).toBe("4.1.3");
+    expect(data.version).toBe("4.1.4");
     expect(data.production_api_url).toBe("https://example.com/v4/");
   });
 
@@ -39,6 +39,6 @@ describe("Index Page", () => {
     const data = (await response.json()) as any;
     expect(response.status).toBe(200);
     expect(data.author_url).toBe("https://github.com/nattadasu");
-    expect(data.version).toBe("4.1.3");
+    expect(data.version).toBe("4.1.4");
   });
 });
