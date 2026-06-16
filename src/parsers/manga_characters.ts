@@ -1,6 +1,6 @@
 import { load } from "cheerio";
 import { MAL_BASE_URL } from "../constants";
-import { cleanImageUrl } from "../utils";
+import { cleanImageUrl, ensureMalUrl } from "../utils";
 
 export function parseMangaCharacters(html: string): any[] {
   const $ = load(html);
@@ -23,7 +23,7 @@ export function parseMangaCharacters(html: string): any[] {
       return {
         character: {
           mal_id: parseInt(charHref.split("/").pop() || "0"),
-          url: MAL_BASE_URL + charHref,
+          url: ensureMalUrl(charHref),
           images: {
             jpg: { image_url: charImageUrl },
             webp: {

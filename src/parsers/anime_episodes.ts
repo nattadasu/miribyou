@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { AnimeEpisode, AnimeEpisodes } from "../models/episodes";
 import { MAL_BASE_URL } from "../constants";
-import { toIsoDate } from "../utils";
+import { toIsoDate, ensureMalUrl } from "../utils";
 
 export function parseAnimeEpisodes(html: string): AnimeEpisodes {
   const $ = load(html);
@@ -14,9 +14,7 @@ export function parseAnimeEpisodes(html: string): AnimeEpisodes {
     );
     const titleLink = $row.find(".episode-title a");
     const title = titleLink.text().trim();
-    const url = titleLink.attr("href")
-      ? MAL_BASE_URL + titleLink.attr("href")
-      : null;
+    const url = ensureMalUrl(titleLink.attr("href"));
 
     const titleJpRow = $row.find(".episode-title span.di-ib").text().trim();
     let title_japanese: string | null = null;
@@ -42,11 +40,11 @@ export function parseAnimeEpisodes(html: string): AnimeEpisodes {
         .length > 0;
 
     const forumLink = $row.find(".episode-forum a").attr("href");
-    const forum_url = forumLink ? MAL_BASE_URL + forumLink : null;
+    const forum_url = ensureMalUrl(forumLink) || null;
 
     episodes.push({
       mal_id: episodeId,
-      url,
+      url: url || null,
       title,
       title_japanese,
       title_romanji,

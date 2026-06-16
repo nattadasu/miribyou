@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { Recommendation } from "../models/recommendations";
 import { MAL_BASE_URL } from "../constants";
-import { cleanImageUrl, toIsoDate } from "../utils";
+import { cleanImageUrl, toIsoDate, ensureMalUrl } from "../utils";
 
 export function parseRecommendations(html: string): Recommendation[] {
   const $ = load(html);
@@ -27,7 +27,7 @@ export function parseRecommendations(html: string): Recommendation[] {
     const recLink = $element
       .find("table tr td:nth-child(2) div:nth-child(2) span a")
       .first();
-    const recUrl = MAL_BASE_URL + recLink.attr("href");
+    const recUrl = ensureMalUrl(recLink.attr("href"));
 
     const votesText = $element
       .find("table tr td:nth-child(2) div:nth-child(4) a:nth-child(1) strong")

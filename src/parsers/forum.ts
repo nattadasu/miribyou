@@ -1,6 +1,7 @@
 import { load } from "cheerio";
 import { ForumTopic } from "../models/forum";
 import { MAL_BASE_URL } from "../constants";
+import { ensureMalUrl } from "../utils";
 
 export function parseForum(html: string): ForumTopic[] {
   const $ = load(html);
@@ -9,15 +10,15 @@ export function parseForum(html: string): ForumTopic[] {
   // Forum topics are in a table, skip header
   $('tr[id^="topicRow"]').each((_, element) => {
     const $element = $(element);
-    const titleLink = $element.find("td:nth-child(2) a").last();
+    const titleLink = $element.find('td:nth-child(2) a[href*="topicid="]').first();
     const title = titleLink.text().trim();
-    const url = MAL_BASE_URL + titleLink.attr("href");
+    const url = ensureMalUrl(titleLink.attr("href"));
     const mal_id = parseInt(url.split("topicid=")[1] || "0");
 
     const date = $element.find("td:nth-child(2) span.lightLink").text().trim();
     const authorLink = $element.find("span.forum_postusername a");
     const author_username = authorLink.text().trim();
-    const author_url = MAL_BASE_URL + authorLink.attr("href");
+    const author_url = ensureMalUrl(authorLink.attr("href"));
 
     const comments = parseInt(
       $element.find("td:nth-child(3)").text().trim() || "0",
@@ -26,9 +27,9 @@ export function parseForum(html: string): ForumTopic[] {
     const lastPostTd = $element.find("td:nth-child(4)");
     const lastAuthorLink = lastPostTd.find("a").first();
     const lastAuthorUsername = lastAuthorLink.text().trim();
-    const lastAuthorUrl = MAL_BASE_URL + lastAuthorLink.attr("href");
+    const lastAuthorUrl = ensureMalUrl(lastAuthorLink.attr("href"));
     const lastPostLink = lastPostTd.find("a").last();
-    const lastPostUrl = MAL_BASE_URL + lastPostLink.attr("href");
+    const lastPostUrl = ensureMalUrl(lastPostLink.attr("href"));
     const lastDate = lastPostTd
       .text()
       .replace(lastAuthorUsername, "")

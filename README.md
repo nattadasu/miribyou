@@ -54,6 +54,7 @@ All endpoints use the `GET` method and are prefixed with `/v4`.
 The query search endpoints support full Jikan v4 parity query parameters:
 
 #### Anime Search (`/v4/anime`)
+
 - `q`: search query string
 - `page`: page number (pagination)
 - `limit`: results limit (default: 25)
@@ -71,6 +72,7 @@ The query search endpoints support full Jikan v4 parity query parameters:
 - `hover=1`: Opt-in Extended Metadata. Resolves hidden MAL data fields concurrently.
 
 #### Manga Search (`/v4/manga`)
+
 - `q`: search query string
 - `page`: page number
 - `limit`: results limit (default: 25)
@@ -87,6 +89,7 @@ The query search endpoints support full Jikan v4 parity query parameters:
 - `hover=1`: Opt-in Extended Metadata popup fetcher.
 
 #### User Search (`/v4/users`)
+
 - `q`: search query string (required)
 - `page`: page number
 - `limit`: results limit (default: 25)

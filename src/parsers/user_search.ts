@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { UserMeta } from "../models/user";
 import { MAL_BASE_URL } from "../constants";
-import { toIsoDate, cleanImageUrl } from "../utils";
+import { toIsoDate, cleanImageUrl, ensureMalUrl } from "../utils";
 
 export function parseUserSearch(html: string): any {
   const $ = load(html);
@@ -31,7 +31,7 @@ export function parseUserSearch(html: string): any {
       data: [
         {
           username,
-          url: MAL_BASE_URL + `/profile/${username}`,
+          url: ensureMalUrl(`/profile/${username}`),
           images: {
             jpg: {
               image_url: profile_image
@@ -76,7 +76,7 @@ export function parseUserSearch(html: string): any {
 
     results.push({
       username,
-      url: url.startsWith("http") ? url : MAL_BASE_URL + url,
+      url: ensureMalUrl(url),
       images: {
         jpg: {
           image_url: imageUrl.replace("thumbs/", "").replace("_thumb", ""),
@@ -115,7 +115,7 @@ export function parseUserSearch(html: string): any {
 
       results.push({
         username,
-        url: url.startsWith("http") ? url : MAL_BASE_URL + url,
+        url: ensureMalUrl(url),
         images: {
           jpg: {
             image_url: imageUrl.replace("thumbs/", "").replace("_thumb", ""),

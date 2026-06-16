@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { Review, Reactions } from "../models/reviews";
 import { MAL_BASE_URL } from "../constants";
-import { toIsoDate } from "../utils";
+import { toIsoDate, ensureMalUrl } from "../utils";
 
 export function parseReviews(html: string, type: "anime" | "manga"): Review[] {
   const $ = load(html);
@@ -28,7 +28,7 @@ export function parseReviews(html: string, type: "anime" | "manga"): Review[] {
 
     const userLink = $element.find(".reviewer .username a");
     const username = userLink.text().trim();
-    const userUrl = MAL_BASE_URL + userLink.attr("href");
+    const userUrl = ensureMalUrl(userLink.attr("href"));
     const userImageUrl =
       $element.find(".reviewer .thumb img").attr("data-src") ||
       $element.find(".reviewer .thumb img").attr("src") ||

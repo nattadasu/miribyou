@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { UserUpdate } from "../models/userupdates";
 import { MAL_BASE_URL } from "../constants";
-import { cleanImageUrl, toIsoDate } from "../utils";
+import { cleanImageUrl, toIsoDate, ensureMalUrl } from "../utils";
 
 export function parseUserUpdates(
   html: string,
@@ -39,7 +39,7 @@ export function parseUserUpdates(
     const update: UserUpdate = {
       user: {
         username,
-        url: url.startsWith("http") ? url : MAL_BASE_URL + url,
+        url: ensureMalUrl(url),
         images: {
           jpg: { image_url: imageUrl },
           webp: { image_url: imageUrl.replace(".jpg", ".webp") },

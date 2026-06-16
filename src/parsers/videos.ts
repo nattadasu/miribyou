@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { AnimeVideos, Promo, VideoEpisode, MusicVideo } from "../models/videos";
 import { MAL_BASE_URL } from "../constants";
-import { cleanImageUrl } from "../utils";
+import { cleanImageUrl, ensureMalUrl } from "../utils";
 
 export function parseAnimeVideos(html: string): AnimeVideos {
   const $ = load(html);
@@ -40,7 +40,7 @@ export function parseAnimeVideos(html: string): AnimeVideos {
     const $element = $(element);
     const titleLink = $element.find("a.title");
     const title = titleLink.text().trim();
-    const url = MAL_BASE_URL + titleLink.attr("href");
+    const url = ensureMalUrl(titleLink.attr("href"));
     const mal_id = parseInt(url.split("/").pop() || "0");
     const episode = $element.find("span.title").text().trim();
     const imageUrl = cleanImageUrl(

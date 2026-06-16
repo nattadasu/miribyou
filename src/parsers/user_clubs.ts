@@ -1,5 +1,6 @@
 import { load } from "cheerio";
 import { MAL_BASE_URL } from "../constants";
+import { ensureMalUrl } from "../utils";
 
 export interface UserClub {
   mal_id: number;
@@ -27,7 +28,7 @@ export function parseUserClubs(html: string): UserClubsResponse {
     const href = link.attr("href") || "";
 
     if (href.includes("cid=")) {
-      const url = href.startsWith("http") ? href : MAL_BASE_URL + href;
+      const url = ensureMalUrl(href);
       const mal_id = parseInt(href.split("cid=")[1] || "0");
 
       if (name) {

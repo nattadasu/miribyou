@@ -131,7 +131,7 @@ export function parseUser(html: string): User {
   return {
     mal_id,
     username,
-    url: MAL_BASE_URL + `/profile/${username}`,
+    url: ensureMalUrl(`/profile/${username}`),
     images,
     last_online,
     gender,
@@ -339,7 +339,7 @@ export function parseUserById(html: string) {
   const node = $("#content div:nth-child(1) div:nth-child(1) a");
   const text = node.text();
   const username = text.split("'s Profile")[0];
-  const url = MAL_BASE_URL + node.attr("href");
+  const url = ensureMalUrl(node.attr("href"));
   return {
     username,
     url,
