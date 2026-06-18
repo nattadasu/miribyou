@@ -6,7 +6,7 @@ As `miribyou` is a "lightweight" implementation of Jikan.moe v4 API in TypeScrip
   - [ ] If needed, clone [jikan-me/jikan](https://github.com/jikan-me/jikan) which is a PHP package specifically to parse MAL HTML as `jikan_ref/`.
 - [ ] Follow Jikan REST documentation to maintain structure and data parity to Jikan. Read [OpenAPI Spec](https://raw.githubusercontent.com/jikan-me/jikan-rest/master/storage/api-docs/api-docs.json)
 - [ ] Ensure you have generated `wrangler types`, and all files must be formatted with prettier (current default config is OK) and linted
-- [ ] **ALWAYS COMPARE WITH LIVE JIKAN DATA**. Whenever you're doing a one-off API call testing, ensure you always check for live data from Jikan and do comprehensive comparison, and walk/cursor to list/object items recursively. Do note that this live Jikan data will be available up to Oct 1, 2026 UTC before Jikan maintainers cease its public api. If you tried to compare the data after the fact, ask to user spun up private Jikan instance. 
+- [ ] **ALWAYS COMPARE WITH LIVE JIKAN DATA**. Whenever you're doing a one-off API call testing, ensure you always check for live data from Jikan and do comprehensive comparison, and walk/cursor to list/object items recursively. Do note that this live Jikan data will be available up to Oct 1, 2026 UTC before Jikan maintainers cease its public api. If you tried to compare the data after the fact, ask to user spun up private Jikan instance.
 
 ## Note on slight data deviation
 
