@@ -25,6 +25,18 @@ describe("Seasons Endpoint", () => {
       const body = (await response.json()) as any;
 
       expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(
+        "public, max-age=86400, s-maxage=86400",
+      );
+      expect(response.headers.get("CDN-Cache-Control")).toBe(
+        "public, max-age=86400, s-maxage=86400",
+      );
+      expect(response.headers.get("Vercel-CDN-Cache-Control")).toBe(
+        "public, max-age=86400, s-maxage=86400",
+      );
+      expect(response.headers.get("X-Powered-By")).toBe(
+        "miribyou (Jikan-like)",
+      );
       expect(body.data).toBeDefined();
       expect(body.data.length).toBeGreaterThan(0);
       expect(body.data[0].year).toBe(2024);

@@ -49,6 +49,21 @@ const app = new Hono<{ Bindings: { MAL_CLIENT_ID?: string } }>().basePath(
 
 app.use(trimTrailingSlash());
 
+app.use("*", async (c, next) => {
+  await next();
+  c.header("X-Powered-By", "miribyou (Jikan-like)");
+
+  const status = c.res.status;
+  const path = c.req.path;
+  const isRoot = path === "/" || path === "/v4" || path === "/v4/";
+
+  if (c.req.method === "GET" && status >= 200 && status < 300 && !isRoot) {
+    c.header("Cache-Control", "public, max-age=86400, s-maxage=86400");
+    c.header("CDN-Cache-Control", "public, max-age=86400, s-maxage=86400");
+    c.header("Vercel-CDN-Cache-Control", "public, max-age=86400, s-maxage=86400");
+  }
+});
+
 const getMetadata = async (c: any) => {
   const malHeartbeat = {
     status: "HEALTHY",

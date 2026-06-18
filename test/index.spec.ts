@@ -23,6 +23,14 @@ describe("Index Page", () => {
     expect(data.version).toBe("4.2.0");
     expect(data.production_api_url).toBe("http://example.com/v4/");
     expect(data.myanimelist_heartbeat).toBeDefined();
+
+    // The root path (/v4) should not be cached
+    expect(response.headers.get("Cache-Control")).toBeNull();
+    expect(response.headers.get("CDN-Cache-Control")).toBeNull();
+    expect(response.headers.get("Vercel-CDN-Cache-Control")).toBeNull();
+
+    // Check custom X-Powered-By header
+    expect(response.headers.get("X-Powered-By")).toBe("miribyou (Jikan-like)");
   });
 
   it("responds with Jikan-like metadata (integration style)", async () => {
