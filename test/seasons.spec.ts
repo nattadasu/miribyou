@@ -273,6 +273,9 @@ describe("Seasons Endpoint", () => {
 
   it("GET /seasons/now respects page and limit", async () => {
     const mockSeasonalHtml = `
+      <p class="fs11 ar fn-grey2 pt8 pr4">
+        Showing: <span class="js-visible-anime-count">3/3</span>
+      </p>
       <div class="seasonal-anime"><a href="/anime/1" class="link-title">Anime 1</a><div class="info"><span class="item">TV</span><span class="item">1 eps</span><span class="item">Jan 1, 2024</span></div></div>
       <div class="seasonal-anime"><a href="/anime/2" class="link-title">Anime 2</a><div class="info"><span class="item">TV</span><span class="item">1 eps</span><span class="item">Jan 1, 2024</span></div></div>
       <div class="seasonal-anime"><a href="/anime/3" class="link-title">Anime 3</a><div class="info"><span class="item">TV</span><span class="item">1 eps</span><span class="item">Jan 1, 2024</span></div></div>
@@ -289,22 +292,53 @@ describe("Seasons Endpoint", () => {
     try {
       // Page 1, limit 2
       const res1 = await SELF.fetch(
-        "https://example.com/v4/seasons/now?page=1&limit=2",
+        "https://example.com/v4/seasons/now?page=1&limit=2&continuing",
       );
       const body1 = (await res1.json()) as any;
       expect(body1.data.length).toBe(2);
       expect(body1.data[0].title).toBe("Anime 1");
       expect(body1.data[1].title).toBe("Anime 2");
       expect(body1.pagination.has_next_page).toBe(true);
+      expect(body1.pagination.items.total).toBe(3);
+      expect(body1.pagination.last_visible_page).toBe(2);
 
       // Page 2, limit 2
       const res2 = await SELF.fetch(
-        "https://example.com/v4/seasons/now?page=2&limit=2",
+        "https://example.com/v4/seasons/now?page=2&limit=2&continuing",
       );
       const body2 = (await res2.json()) as any;
       expect(body2.data.length).toBe(1);
       expect(body2.data[0].title).toBe("Anime 3");
       expect(body2.pagination.has_next_page).toBe(false);
+      expect(body2.pagination.items.total).toBe(3);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("GET /seasons/now parses large js-visible-anime-count correctly", async () => {
+    const mockSeasonalHtml = `
+      <p class="fs11 ar fn-grey2 pt8 pr4">
+        Showing: <span class="js-visible-anime-count">210/210</span>
+      </p>
+      <div class="seasonal-anime"><a href="/anime/1" class="link-title">Anime 1</a><div class="info"><span class="item">TV</span></div></div>
+    `;
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.endsWith("/anime/season")) {
+        return Promise.resolve(new Response(mockSeasonalHtml, { status: 200 }));
+      }
+      return originalFetch(url);
+    });
+
+    try {
+      const res = await SELF.fetch(
+        "https://example.com/v4/seasons/now?continuing",
+      );
+      const body = (await res.json()) as any;
+      expect(body.pagination.items.total).toBe(210);
+      expect(body.pagination.last_visible_page).toBe(9); // Math.ceil(210 / 25) = 9
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -339,6 +373,96 @@ describe("Seasons Endpoint", () => {
       const body2 = (await res2.json()) as any;
       expect(body2.data.length).toBe(2);
       expect(body2.data.some((i: any) => i.title === "Hentai")).toBe(false);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("GET /seasons/now respects continuing flag", async () => {
+    const mockSeasonalHtml = `
+      <div class="seasonal-anime-list">
+        <div class="anime-header">TV (New)</div>
+        <div class="seasonal-anime">
+          <div class="title"><a href="/anime/1" class="link-title">New Anime</a></div>
+          <div class="info"><span class="item">TV</span></div>
+        </div>
+      </div>
+      <div class="seasonal-anime-list">
+        <div class="anime-header">TV (Continuing)</div>
+        <div class="seasonal-anime">
+          <div class="title"><a href="/anime/2" class="link-title">Continuing Anime</a></div>
+          <div class="info"><span class="item">TV</span></div>
+        </div>
+      </div>
+    `;
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.endsWith("/anime/season")) {
+        return Promise.resolve(new Response(mockSeasonalHtml, { status: 200 }));
+      }
+      return originalFetch(url);
+    });
+
+    try {
+      // By default (excludes continuing)
+      const resDefault = await SELF.fetch("https://example.com/v4/seasons/now");
+      const bodyDefault = (await resDefault.json()) as any;
+      expect(bodyDefault.data.length).toBe(1);
+      expect(bodyDefault.data[0].title).toBe("New Anime");
+
+      // With continuing flag
+      const resWithContinuing = await SELF.fetch(
+        "https://example.com/v4/seasons/now?continuing",
+      );
+      const bodyWithContinuing = (await resWithContinuing.json()) as any;
+      expect(bodyWithContinuing.data.length).toBe(2);
+      expect(
+        bodyWithContinuing.data.some(
+          (i: any) => i.title === "Continuing Anime",
+        ),
+      ).toBe(true);
+      expect(bodyWithContinuing.data[0].continuing).toBeUndefined();
+      expect(bodyWithContinuing.data[1].continuing).toBeUndefined();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("GET /seasons/now checks sfw=false behaves correctly", async () => {
+    const mockSeasonalHtml = `
+      <p class="fs11 ar fn-grey2 pt8 pr4">
+        Showing: <span class="js-visible-anime-count">10/10</span>
+      </p>
+      <div class="seasonal-anime"><a href="/anime/1" class="link-title">SFW Anime</a><div class="info"><span class="item">TV</span></div></div>
+      <div class="seasonal-anime"><a href="/anime/2" class="link-title">Hentai Anime</a><div class="info"><span class="item">TV</span></div><div class="genres"><span class="genre"><a href="/genre/12/Hentai">Hentai</a></span></div></div>
+    `;
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.endsWith("/anime/season")) {
+        return Promise.resolve(new Response(mockSeasonalHtml, { status: 200 }));
+      }
+      return originalFetch(url);
+    });
+
+    try {
+      // ?sfw=false should keep NSFW anime, total is still data.total (10)
+      const res = await SELF.fetch(
+        "https://example.com/v4/seasons/now?sfw=false&continuing",
+      );
+      const body = (await res.json()) as any;
+      expect(body.data.length).toBe(2);
+      expect(body.pagination.items.total).toBe(10);
+
+      // ?sfw flag (no value) should filter out Hentai anime, total is results.length (1)
+      const resFlag = await SELF.fetch(
+        "https://example.com/v4/seasons/now?sfw&continuing",
+      );
+      const bodyFlag = (await resFlag.json()) as any;
+      expect(bodyFlag.data.length).toBe(1);
+      expect(bodyFlag.data[0].title).toBe("SFW Anime");
+      expect(bodyFlag.pagination.items.total).toBe(1);
     } finally {
       globalThis.fetch = originalFetch;
     }

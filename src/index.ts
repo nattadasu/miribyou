@@ -60,7 +60,10 @@ app.use("*", async (c, next) => {
   if (c.req.method === "GET" && status >= 200 && status < 300 && !isRoot) {
     c.header("Cache-Control", "public, max-age=86400, s-maxage=86400");
     c.header("CDN-Cache-Control", "public, max-age=86400, s-maxage=86400");
-    c.header("Vercel-CDN-Cache-Control", "public, max-age=86400, s-maxage=86400");
+    c.header(
+      "Vercel-CDN-Cache-Control",
+      "public, max-age=86400, s-maxage=86400",
+    );
   }
 });
 
@@ -149,7 +152,9 @@ app.get("/anime", async (c) => {
     : undefined;
   const status = c.req.query("status");
   const rating = c.req.query("rating");
-  const sfw = c.req.query("sfw") === "1" || c.req.query("sfw") === "true";
+  const sfwParam = c.req.query("sfw");
+  const sfw =
+    sfwParam !== undefined && sfwParam !== "false" && sfwParam !== "0";
   const genres = c.req.query("genres");
   const genres_exclude = c.req.query("genres_exclude");
   const order_by = c.req.query("order_by");
@@ -814,7 +819,9 @@ app.get("/manga", async (c) => {
     ? parseFloat(c.req.query("max_score")!)
     : undefined;
   const status = c.req.query("status");
-  const sfw = c.req.query("sfw") === "1" || c.req.query("sfw") === "true";
+  const sfwParam = c.req.query("sfw");
+  const sfw =
+    sfwParam !== undefined && sfwParam !== "false" && sfwParam !== "0";
   const genres = c.req.query("genres");
   const genres_exclude = c.req.query("genres_exclude");
   const order_by = c.req.query("order_by");
@@ -1410,7 +1417,14 @@ app.get("/seasons/now", async (c) => {
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
   const filter = c.req.query("filter");
-  const sfw = c.req.query("sfw") === "1" || c.req.query("sfw") === "true";
+  const sfwParam = c.req.query("sfw");
+  const sfw =
+    sfwParam !== undefined && sfwParam !== "false" && sfwParam !== "0";
+  const continuingParam = c.req.query("continuing");
+  const includeContinuing =
+    continuingParam !== undefined &&
+    continuingParam !== "false" &&
+    continuingParam !== "0";
 
   const malClientId = c.req.header("x-mal-client-id") || c.env.MAL_CLIENT_ID;
   if (malClientId) {
@@ -1429,9 +1443,16 @@ app.get("/seasons/now", async (c) => {
       );
       let results = (apiResponse.data || []).map((item: any) => {
         const data = parseMalApiAnime(item.node);
+        const startSeason = item.node.start_season;
+        data.continuing = startSeason
+          ? startSeason.season !== season || startSeason.year !== year
+          : false;
         return data;
       });
 
+      if (!includeContinuing) {
+        results = results.filter((item: any) => !item.continuing);
+      }
       if (filter) {
         results = results.filter(
           (item: any) => item.type?.toLowerCase() === filter.toLowerCase(),
@@ -1451,6 +1472,7 @@ app.get("/seasons/now", async (c) => {
         });
       }
 
+      results.forEach((item: any) => delete item.continuing);
       const slicedData = results.slice(0, limit);
       const hasNext = apiResponse.paging?.next ? true : false;
       const hasNextPage = results.length > limit || hasNext;
@@ -1483,6 +1505,9 @@ app.get("/seasons/now", async (c) => {
       return item;
     });
 
+    if (!includeContinuing) {
+      results = results.filter((item: any) => !item.continuing);
+    }
     if (filter) {
       results = results.filter(
         (item: any) => item.type?.toLowerCase() === filter.toLowerCase(),
@@ -1502,6 +1527,7 @@ app.get("/seasons/now", async (c) => {
       });
     }
 
+    results.forEach((item: any) => delete item.continuing);
     if (hover && results.length > 0) {
       const startIndex = (page - 1) * limit;
       const toEnrich = results.slice(startIndex, startIndex + limit);
@@ -1533,16 +1559,20 @@ app.get("/seasons/now", async (c) => {
 
     const startIndex = (page - 1) * limit;
     const slicedData = results.slice(startIndex, startIndex + limit);
-    const hasNext = startIndex + limit < results.length;
+    const totalCount =
+      filter || sfw || !includeContinuing
+        ? results.length
+        : data.total || results.length;
+    const hasNext = startIndex + limit < totalCount;
 
     return c.json({
       pagination: {
-        last_visible_page: Math.ceil(results.length / limit),
+        last_visible_page: Math.ceil(totalCount / limit),
         has_next_page: hasNext,
         current_page: page,
         items: {
           count: slicedData.length,
-          total: results.length,
+          total: totalCount,
           per_page: limit,
         },
       },
@@ -1558,7 +1588,14 @@ app.get("/seasons/upcoming", async (c) => {
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
   const filter = c.req.query("filter");
-  const sfw = c.req.query("sfw") === "1" || c.req.query("sfw") === "true";
+  const sfwParam = c.req.query("sfw");
+  const sfw =
+    sfwParam !== undefined && sfwParam !== "false" && sfwParam !== "0";
+  const continuingParam = c.req.query("continuing");
+  const includeContinuing =
+    continuingParam !== undefined &&
+    continuingParam !== "false" &&
+    continuingParam !== "0";
 
   const malClientId = c.req.header("x-mal-client-id") || c.env.MAL_CLIENT_ID;
   if (malClientId) {
@@ -1578,9 +1615,16 @@ app.get("/seasons/upcoming", async (c) => {
       );
       let results = (apiResponse.data || []).map((item: any) => {
         const data = parseMalApiAnime(item.node);
+        const startSeason = item.node.start_season;
+        data.continuing = startSeason
+          ? startSeason.season !== next.season || startSeason.year !== next.year
+          : false;
         return data;
       });
 
+      if (!includeContinuing) {
+        results = results.filter((item: any) => !item.continuing);
+      }
       if (filter) {
         results = results.filter(
           (item: any) => item.type?.toLowerCase() === filter.toLowerCase(),
@@ -1600,6 +1644,7 @@ app.get("/seasons/upcoming", async (c) => {
         });
       }
 
+      results.forEach((item: any) => delete item.continuing);
       const slicedData = results.slice(0, limit);
       const hasNext = apiResponse.paging?.next ? true : false;
       const hasNextPage = results.length > limit || hasNext;
@@ -1633,6 +1678,9 @@ app.get("/seasons/upcoming", async (c) => {
       return item;
     });
 
+    if (!includeContinuing) {
+      results = results.filter((item: any) => !item.continuing);
+    }
     if (filter) {
       results = results.filter(
         (item: any) => item.type?.toLowerCase() === filter.toLowerCase(),
@@ -1652,6 +1700,7 @@ app.get("/seasons/upcoming", async (c) => {
       });
     }
 
+    results.forEach((item: any) => delete item.continuing);
     if (hover && results.length > 0) {
       const startIndex = (page - 1) * limit;
       const toEnrich = results.slice(startIndex, startIndex + limit);
@@ -1683,16 +1732,20 @@ app.get("/seasons/upcoming", async (c) => {
 
     const startIndex = (page - 1) * limit;
     const slicedData = results.slice(startIndex, startIndex + limit);
-    const hasNext = startIndex + limit < results.length;
+    const totalCount =
+      filter || sfw || !includeContinuing
+        ? results.length
+        : data.total || results.length;
+    const hasNext = startIndex + limit < totalCount;
 
     return c.json({
       pagination: {
-        last_visible_page: Math.ceil(results.length / limit),
+        last_visible_page: Math.ceil(totalCount / limit),
         has_next_page: hasNext,
         current_page: page,
         items: {
           count: slicedData.length,
-          total: results.length,
+          total: totalCount,
           per_page: limit,
         },
       },
@@ -1709,7 +1762,14 @@ app.get("/seasons/:year/:season", async (c) => {
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
   const filter = c.req.query("filter");
-  const sfw = c.req.query("sfw") === "1" || c.req.query("sfw") === "true";
+  const sfwParam = c.req.query("sfw");
+  const sfw =
+    sfwParam !== undefined && sfwParam !== "false" && sfwParam !== "0";
+  const continuingParam = c.req.query("continuing");
+  const includeContinuing =
+    continuingParam !== undefined &&
+    continuingParam !== "false" &&
+    continuingParam !== "0";
 
   const malClientId = c.req.header("x-mal-client-id") || c.env.MAL_CLIENT_ID;
   if (malClientId) {
@@ -1727,9 +1787,17 @@ app.get("/seasons/:year/:season", async (c) => {
       );
       let results = (apiResponse.data || []).map((item: any) => {
         const data = parseMalApiAnime(item.node);
+        const startSeason = item.node.start_season;
+        data.continuing = startSeason
+          ? startSeason.season !== season.toLowerCase() ||
+            startSeason.year !== parseInt(year)
+          : false;
         return data;
       });
 
+      if (!includeContinuing) {
+        results = results.filter((item: any) => !item.continuing);
+      }
       if (filter) {
         results = results.filter(
           (item: any) => item.type?.toLowerCase() === filter.toLowerCase(),
@@ -1749,6 +1817,7 @@ app.get("/seasons/:year/:season", async (c) => {
         });
       }
 
+      results.forEach((item: any) => delete item.continuing);
       const slicedData = results.slice(0, limit);
       const hasNext = apiResponse.paging?.next ? true : false;
       const hasNextPage = results.length > limit || hasNext;
@@ -1782,6 +1851,9 @@ app.get("/seasons/:year/:season", async (c) => {
       return item;
     });
 
+    if (!includeContinuing) {
+      results = results.filter((item: any) => !item.continuing);
+    }
     if (filter) {
       results = results.filter(
         (item: any) => item.type?.toLowerCase() === filter.toLowerCase(),
@@ -1801,6 +1873,7 @@ app.get("/seasons/:year/:season", async (c) => {
       });
     }
 
+    results.forEach((item: any) => delete item.continuing);
     if (hover && results.length > 0) {
       const startIndex = (page - 1) * limit;
       const toEnrich = results.slice(startIndex, startIndex + limit);
@@ -1832,16 +1905,20 @@ app.get("/seasons/:year/:season", async (c) => {
 
     const startIndex = (page - 1) * limit;
     const slicedData = results.slice(startIndex, startIndex + limit);
-    const hasNext = startIndex + limit < results.length;
+    const totalCount =
+      filter || sfw || !includeContinuing
+        ? results.length
+        : data.total || results.length;
+    const hasNext = startIndex + limit < totalCount;
 
     return c.json({
       pagination: {
-        last_visible_page: Math.ceil(results.length / limit),
+        last_visible_page: Math.ceil(totalCount / limit),
         has_next_page: hasNext,
         current_page: page,
         items: {
           count: slicedData.length,
-          total: results.length,
+          total: totalCount,
           per_page: limit,
         },
       },

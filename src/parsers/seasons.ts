@@ -177,6 +177,13 @@ export function parseSeason(html: string): any {
       !airing_start.includes("?") &&
       new Date(airing_start.split(",").slice(0, 2).join(",")) <= new Date();
 
+    const isContinuing = $el
+      .closest(".seasonal-anime-list")
+      .find(".anime-header")
+      .text()
+      .toLowerCase()
+      .includes("continuing");
+
     data.push({
       mal_id,
       url: ensureMalUrl(href),
@@ -228,6 +235,7 @@ export function parseSeason(html: string): any {
       background: "",
       season: null,
       year: null,
+      continuing: isContinuing,
       broadcast,
       producers,
       licensors: [],
@@ -239,5 +247,15 @@ export function parseSeason(html: string): any {
     });
   });
 
-  return { data };
+  const visibleCountText = $(".js-visible-anime-count").text().trim();
+  let total = data.length;
+  if (visibleCountText) {
+    const parts = visibleCountText.split("/");
+    const parsedTotal = parseInt(parts[parts.length - 1]);
+    if (!isNaN(parsedTotal)) {
+      total = parsedTotal;
+    }
+  }
+
+  return { data, total };
 }

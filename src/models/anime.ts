@@ -92,6 +92,7 @@ export interface Anime {
   background: string | null;
   season: string | null;
   year: number | null;
+  continuing?: boolean;
   broadcast: {
     day: string | null;
     time: string | null;
