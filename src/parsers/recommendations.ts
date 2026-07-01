@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { Recommendation } from "../models/recommendations";
 import { MAL_BASE_URL } from "../constants";
-import { cleanImageUrl, toIsoDate, ensureMalUrl } from "../utils";
+import { cleanImageUrl, toIsoDate, ensureMalUrl, extractMalId } from "../utils";
 
 export function parseRecommendations(html: string): Recommendation[] {
   const $ = load(html);
@@ -14,7 +14,7 @@ export function parseRecommendations(html: string): Recommendation[] {
       .first();
     const title = titleLink.text().trim();
     const url = titleLink.attr("href") || "";
-    const mal_id = parseInt(url.split("/").pop() || "0");
+    const mal_id = extractMalId(url);
     const imageUrl = cleanImageUrl(
       $element
         .find("table tr td:nth-child(1) div:nth-child(1) a img")
@@ -73,7 +73,7 @@ export function parseUserRecommendations(html: string): any[] {
 
       if (title) {
         entries.push({
-          mal_id: parseInt(url.split("/").pop() || "0"),
+          mal_id: extractMalId(url),
           url,
           images: {
             jpg: { image_url: imageUrl },

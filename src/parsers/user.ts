@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { User } from "../models/user";
 import { MAL_BASE_URL } from "../constants";
-import { toIsoDate, cleanImageUrl, ensureMalUrl } from "../utils";
+import { toIsoDate, cleanImageUrl, ensureMalUrl, extractMalId } from "../utils";
 
 export function parseUser(html: string): User {
   const $ = load(html);
@@ -179,8 +179,7 @@ function parseFavorites($: any, selector: string, resourceType: string) {
             ? infoParts[0].trim()
             : null;
 
-      const parts = href.split("/").filter(Boolean);
-      const mal_id = parseInt(parts[parts.length - 2] || "0");
+      const mal_id = extractMalId(href);
 
       const images: any = {
         jpg: {
@@ -269,8 +268,7 @@ function parseLastUpdates($: any, selector: string, type: "anime" | "manga") {
         .trim();
       const date = toIsoDate(dateText);
 
-      const parts = href.split("/").filter(Boolean);
-      const mal_id = parseInt(parts[parts.length - 2] || "0");
+      const mal_id = extractMalId(href);
 
       const images = {
         jpg: {

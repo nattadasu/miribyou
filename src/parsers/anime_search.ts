@@ -1,6 +1,11 @@
 import { load } from "cheerio";
 import { MAL_BASE_URL } from "../constants";
-import { parseMalDate, cleanImageUrl, resolveSearchDate } from "../utils";
+import {
+  parseMalDate,
+  cleanImageUrl,
+  resolveSearchDate,
+  extractMalId,
+} from "../utils";
 
 export function parseAnimeSearch(html: string): any {
   const $ = load(html);
@@ -55,7 +60,7 @@ export function parseAnimeSearch(html: string): any {
       const aired = resolveSearchDate(rawAired);
 
       return {
-        mal_id: parseInt(href.split("/").slice(-2, -1)[0] || "0"),
+        mal_id: extractMalId(href),
         url: href,
         images: {
           jpg: {

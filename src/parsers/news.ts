@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { NewsListItem } from "../models/news";
 import { MAL_BASE_URL } from "../constants";
-import { toIsoDate, cleanImageUrl, ensureMalUrl } from "../utils";
+import { toIsoDate, cleanImageUrl, ensureMalUrl, extractMalId } from "../utils";
 
 export function parseNews(html: string): NewsListItem[] {
   const $ = load(html);
@@ -22,7 +22,7 @@ export function parseNews(html: string): NewsListItem[] {
 
     const title = actualLink.text().trim();
     const url = ensureMalUrl(actualLink.attr("href"));
-    const mal_id = parseInt(url.split("/").pop() || "0");
+    const mal_id = extractMalId(url);
 
     const imageUrl = cleanImageUrl(
       $element.find("img").attr("data-src") || $element.find("img").attr("src"),

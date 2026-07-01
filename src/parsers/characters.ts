@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { AnimeCharacter, AnimeStaff } from "../models/characters";
 import { MAL_BASE_URL } from "../constants";
-import { cleanImageUrl, ensureMalUrl } from "../utils";
+import { cleanImageUrl, ensureMalUrl, extractMalId } from "../utils";
 
 export function parseAnimeCharacters(html: string): AnimeCharacter[] {
   const $ = load(html);
@@ -42,7 +42,7 @@ export function parseAnimeCharacters(html: string): AnimeCharacter[] {
 
           return {
             person: {
-              mal_id: parseInt(vaHref.split("/").pop() || "0"),
+              mal_id: extractMalId(vaHref),
               url: ensureMalUrl(vaHref),
               images: {
                 jpg: { image_url: vaImageUrl },
@@ -59,7 +59,7 @@ export function parseAnimeCharacters(html: string): AnimeCharacter[] {
 
       return {
         character: {
-          mal_id: parseInt(charHref.split("/").pop() || "0"),
+          mal_id: extractMalId(charHref),
           url: ensureMalUrl(charHref),
           images: {
             jpg: { image_url: charImageUrl },
@@ -99,7 +99,7 @@ export function parseAnimeStaff(html: string): AnimeStaff[] {
 
       return {
         person: {
-          mal_id: parseInt(personHref.split("/").pop() || "0"),
+          mal_id: extractMalId(personHref),
           url: ensureMalUrl(personHref),
           images: {
             jpg: { image_url: personImageUrl },

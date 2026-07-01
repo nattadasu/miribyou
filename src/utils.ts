@@ -281,6 +281,12 @@ export function toIsoDate(str: string | null): string | null {
   }
 }
 
+export function extractMalId(href: string): number {
+  const parts = href.split("/").filter(Boolean);
+  const last = parts.at(-1);
+  return parseInt(last || "0") || parseInt(parts.at(-2) || "0");
+}
+
 export function cleanImageUrl(url: string | undefined): string {
   if (!url) return "";
   return url.split("?")[0];

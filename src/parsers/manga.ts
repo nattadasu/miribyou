@@ -2,7 +2,12 @@ import { load } from "cheerio";
 import { Manga } from "../models/manga";
 import { MalUrl, Title, Relation } from "../models/anime";
 import { MAL_BASE_URL } from "../constants";
-import { parseMalDate, cleanImageUrl, ensureMalUrl } from "../utils";
+import {
+  parseMalDate,
+  cleanImageUrl,
+  ensureMalUrl,
+  extractMalId,
+} from "../utils";
 
 export function parseManga(html: string): Manga {
   const $ = load(html);
@@ -290,8 +295,7 @@ export function parseMangaCharacters(html: string): any[] {
         .text()
         .trim();
 
-      const parts = charHref.split("/").filter(Boolean);
-      const mal_id = parseInt(parts[parts.length - 2] || "0");
+      const mal_id = extractMalId(charHref);
 
       return {
         character: {

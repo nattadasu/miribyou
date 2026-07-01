@@ -1,6 +1,11 @@
 import { load } from "cheerio";
 import { MAL_BASE_URL } from "../constants";
-import { parseMalDate, cleanImageUrl, resolveSearchDate } from "../utils";
+import {
+  parseMalDate,
+  cleanImageUrl,
+  resolveSearchDate,
+  extractMalId,
+} from "../utils";
 
 export function parseMangaSearch(html: string): any {
   const $ = load(html);
@@ -11,7 +16,7 @@ export function parseMangaSearch(html: string): any {
     const titleLink = $row.find("td:nth-child(2) a.hoverinfo_trigger");
     const title = titleLink.text().trim();
     const url = titleLink.attr("href") || "";
-    const mal_id = parseInt(url.split("/").slice(-2, -1)[0] || "0");
+    const mal_id = extractMalId(url);
 
     let imageUrl = cleanImageUrl(
       $row.find("td:nth-child(1) img").attr("data-src") ||
