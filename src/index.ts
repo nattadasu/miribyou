@@ -43,6 +43,13 @@ import { parseUserClubs } from "./parsers/user_clubs";
 import { parseHistory } from "./parsers/history";
 import { parseHover } from "./parsers/hover";
 import { parseSeasonList, parseSeason } from "./parsers/seasons";
+import {
+  parseCharacter,
+  parseCharacterAnime,
+  parseCharacterManga,
+  parseCharacterVoices,
+  parseCharacterPictures,
+} from "./parsers/character";
 
 const app = new Hono<{ Bindings: { MAL_CLIENT_ID?: string } }>().basePath(
   "/v4",
@@ -1381,6 +1388,83 @@ app.get("/manga/:id/external", async (c) => {
     const html = await fetchMAL(`/manga/${id}`);
     const data = parseManga(html);
     return c.json({ data: data.external });
+  } catch (error: any) {
+    const status = error.message.includes("404") ? 404 : 500;
+    return c.json(jikanError(status, error.message), status);
+  }
+});
+
+// ── Characters ──
+
+app.get("/characters/:id", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const html = await fetchMAL(`/character/${id}`);
+    const data = parseCharacter(html);
+    return c.json({ data });
+  } catch (error: any) {
+    const status = error.message.includes("404") ? 404 : 500;
+    return c.json(jikanError(status, error.message), status);
+  }
+});
+
+app.get("/characters/:id/full", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const html = await fetchMAL(`/character/${id}`);
+    const data = parseCharacter(html);
+    const anime = parseCharacterAnime(html);
+    const manga = parseCharacterManga(html);
+    const voices = parseCharacterVoices(html);
+    return c.json({ data: { ...data, anime, manga, voices } });
+  } catch (error: any) {
+    const status = error.message.includes("404") ? 404 : 500;
+    return c.json(jikanError(status, error.message), status);
+  }
+});
+
+app.get("/characters/:id/anime", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const html = await fetchMAL(`/character/${id}`);
+    const data = parseCharacterAnime(html);
+    return c.json({ data });
+  } catch (error: any) {
+    const status = error.message.includes("404") ? 404 : 500;
+    return c.json(jikanError(status, error.message), status);
+  }
+});
+
+app.get("/characters/:id/manga", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const html = await fetchMAL(`/character/${id}`);
+    const data = parseCharacterManga(html);
+    return c.json({ data });
+  } catch (error: any) {
+    const status = error.message.includes("404") ? 404 : 500;
+    return c.json(jikanError(status, error.message), status);
+  }
+});
+
+app.get("/characters/:id/voices", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const html = await fetchMAL(`/character/${id}`);
+    const data = parseCharacterVoices(html);
+    return c.json({ data });
+  } catch (error: any) {
+    const status = error.message.includes("404") ? 404 : 500;
+    return c.json(jikanError(status, error.message), status);
+  }
+});
+
+app.get("/characters/:id/pictures", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const html = await fetchMAL(`/character/${id}/_/pics`);
+    const data = parseCharacterPictures(html);
+    return c.json({ data });
   } catch (error: any) {
     const status = error.message.includes("404") ? 404 : 500;
     return c.json(jikanError(status, error.message), status);

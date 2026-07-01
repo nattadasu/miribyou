@@ -173,6 +173,15 @@ All endpoints are `GET` requests.
 - `GET /v4/manga/:id/relations` - Related entries
 - `GET /v4/manga/:id/external` - External links
 
+### Characters
+
+- `GET /v4/characters/:id` - Basic character info (name, images, about, favorites)
+- `GET /v4/characters/:id/full` - Full character data including anime, manga, and voice actor appearances
+- `GET /v4/characters/:id/anime` - Anime appearances with roles
+- `GET /v4/characters/:id/manga` - Manga appearances with roles
+- `GET /v4/characters/:id/voices` - Voice actors
+- `GET /v4/characters/:id/pictures` - Character image gallery
+
 ### Seasons
 
 - `GET /v4/seasons` - List of all archived years and seasons
