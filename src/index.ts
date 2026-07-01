@@ -13,7 +13,8 @@ import {
   MANGA_FIELDS,
 } from "./mal_api";
 import { parseAnime } from "./parsers/anime";
-import { parseAnimeCharacters, parseAnimeStaff } from "./parsers/characters";
+import { parseAnimeCharacters } from "./parsers/characters";
+import { parseAnimeStaff } from "./parsers/staff";
 import { parseAnimeSearch } from "./parsers/anime_search";
 import {
   parseAnimeEpisodes,

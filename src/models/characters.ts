@@ -24,8 +24,3 @@ export interface MangaCharacter {
   character: CharacterMeta;
   role: string;
 }
-
-export interface AnimeStaff {
-  person: PersonMeta;
-  positions: string[];
-}
