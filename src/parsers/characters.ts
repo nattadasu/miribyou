@@ -38,7 +38,10 @@ export function parseAnimeCharacters(html: string): AnimeCharacter[] {
             $vaRow.find("td:nth-child(2) img").attr("data-src") ||
               $vaRow.find("td:nth-child(2) img").attr("src"),
           );
-          const language = $vaRow.find("td:nth-child(1) small").text().trim();
+          const language = $vaRow
+            .find("td:nth-child(1) .js-anime-character-language")
+            .text()
+            .trim();
 
           return {
             person: {
