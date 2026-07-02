@@ -116,7 +116,7 @@ export function parseUser(html: string): User {
     manga: parseLastUpdates($, ".updates.manga", "manga"),
   };
 
-  const about = $(".user-profile .user-profile-about").html() || null;
+  const about = $(".user-profile-about .word-break").html()?.trim() || null;
 
   const external: any[] = [];
   $(".user-profile-sns a").each((_, el) => {
