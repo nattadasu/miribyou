@@ -74,7 +74,8 @@ export function parseReviews(
 
     const tags: string[] = [];
     $element.find(".tags .tag").each((_: any, tag: any) => {
-      tags.push($(tag).text().trim());
+      const text = $(tag).clone().children().remove().end().text().trim();
+      if (text) tags.push(text);
     });
 
     const is_spoiler = $element.find(".tags .spoiler").length > 0;
