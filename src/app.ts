@@ -28,7 +28,10 @@ import {
 } from "./parsers/anime_episodes.js";
 import { parseNews } from "./parsers/news.js";
 import { parseForum } from "./parsers/forum.js";
-import { parseAnimeVideos, parseAnimeVideosEpisodes } from "./parsers/videos.js";
+import {
+  parseAnimeVideos,
+  parseAnimeVideosEpisodes,
+} from "./parsers/videos.js";
 import { parsePictures } from "./parsers/pictures.js";
 import { parseStatistics } from "./parsers/stats.js";
 import { parseMoreInfo } from "./parsers/moreinfo.js";

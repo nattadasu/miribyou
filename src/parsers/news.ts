@@ -1,7 +1,12 @@
 import { load } from "cheerio";
 import { NewsListItem } from "../models/news.js";
 import { MAL_BASE_URL } from "../constants.js";
-import { toIsoDate, cleanImageUrl, ensureMalUrl, extractMalId } from "../utils.js";
+import {
+  toIsoDate,
+  cleanImageUrl,
+  ensureMalUrl,
+  extractMalId,
+} from "../utils.js";
 
 interface NewsPagination {
   last_visible_page: number;

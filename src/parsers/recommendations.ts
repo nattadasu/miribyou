@@ -1,7 +1,12 @@
 import { load } from "cheerio";
 import { Recommendation } from "../models/recommendations.js";
 import { MAL_BASE_URL } from "../constants.js";
-import { cleanImageUrl, toIsoDate, ensureMalUrl, extractMalId } from "../utils.js";
+import {
+  cleanImageUrl,
+  toIsoDate,
+  ensureMalUrl,
+  extractMalId,
+} from "../utils.js";
 
 export function parseRecommendations(html: string): Recommendation[] {
   const $ = load(html);
