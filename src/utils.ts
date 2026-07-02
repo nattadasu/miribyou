@@ -419,7 +419,7 @@ export function youtubeTrailerImages(id: string | null): {
 
 export function sanitizeCRLF(str: string | null | undefined): string | null {
   if (str == null) return null;
-  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/\n\n/g, "\n");
 }
 
 export function sanitizeObject<T>(obj: T): T {
