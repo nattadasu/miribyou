@@ -1,7 +1,9 @@
 import { MAL_BASE_URL } from "./constants";
 
 const requestCache = new Map<string, Promise<string>>();
+const responseCache = new Map<string, { text: string; expires: number }>();
 const CACHE_MAX_SIZE = 100;
+const CACHE_TTL_MS = 60_000;
 
 function trimRequestCache() {
   if (requestCache.size > CACHE_MAX_SIZE) {
@@ -12,8 +14,20 @@ function trimRequestCache() {
   }
 }
 
+function trimResponseCache() {
+  if (responseCache.size > CACHE_MAX_SIZE) {
+    const oldest = [...responseCache.entries()].sort(
+      (a, b) => a[1].expires - b[1].expires,
+    );
+    for (let i = 0; i < oldest.length - CACHE_MAX_SIZE; i++) {
+      responseCache.delete(oldest[i][0]);
+    }
+  }
+}
+
 export function clearRequestCache() {
   requestCache.clear();
+  responseCache.clear();
 }
 
 export async function mapConcurrent<T, R>(
@@ -49,16 +63,25 @@ export async function fetchMAL(
 ): Promise<string> {
   const url = `https://myanimelist.net${path}`;
 
-  const cached = requestCache.get(url);
-  if (cached) return cached;
+  const existing = responseCache.get(url);
+  if (existing && Date.now() < existing.expires) {
+    return existing.text;
+  }
+
+  const inflight = requestCache.get(url);
+  if (inflight) return inflight;
 
   trimRequestCache();
-  const promise = doFetchMAL(url, headers);
+  trimResponseCache();
+
+  const promise = (async (): Promise<string> => {
+    const text = await doFetchMAL(url, headers);
+    responseCache.set(url, { text, expires: Date.now() + CACHE_TTL_MS });
+    return text;
+  })();
+
   requestCache.set(url, promise);
-  promise.then(
-    () => setTimeout(() => requestCache.delete(url), 100),
-    () => requestCache.delete(url),
-  );
+  promise.finally(() => requestCache.delete(url));
 
   return promise;
 }
@@ -73,19 +96,6 @@ async function doFetchMAL(
     ...headers,
   };
 
-  const cacheReq =
-    typeof caches !== "undefined"
-      ? new Request(url, { headers: userAgent })
-      : null;
-
-  if (cacheReq) {
-    const cache = await caches.default.match(cacheReq);
-    if (cache && cache.ok) {
-      const text = await cache.text();
-      if (text.length > 0) return text;
-    }
-  }
-
   const response = await fetch(url, { headers: userAgent });
 
   if (!response.ok) {
@@ -97,26 +107,7 @@ async function doFetchMAL(
     );
   }
 
-  const text = await response.text();
-
-  if (cacheReq && text.length > 0) {
-    const ctx = new URL(url).pathname;
-    if (!ctx.includes("/hover") && !ctx.includes("/load.json")) {
-      const cacheResp = new Response(text, {
-        headers: {
-          "Cache-Control": "public, max-age=86400, s-maxage=86400",
-          "Content-Type": response.headers.get("Content-Type") || "",
-        },
-      });
-      (async () => {
-        try {
-          await caches.default.put(cacheReq, cacheResp);
-        } catch {}
-      })();
-    }
-  }
-
-  return text;
+  return response.text();
 }
 
 export function parseMalDate(dateStr: string | null) {
