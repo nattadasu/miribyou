@@ -1,7 +1,13 @@
 import { load } from "cheerio";
 import { Anime, MalUrl, Title, Relation } from "../models/anime";
 import { MAL_BASE_URL } from "../constants";
-import { parseMalDate, cleanImageUrl, ensureMalUrl } from "../utils";
+import {
+  parseMalDate,
+  cleanImageUrl,
+  ensureMalUrl,
+  youtubeIdFromUrl,
+  youtubeTrailerImages,
+} from "../utils";
 
 export function parseAnime(html: string): Anime {
   const $ = load(html);
@@ -364,17 +370,7 @@ export function parseAnime(html: string): Anime {
 
   // Trailer
   const trailerUrl = $(".video-promotion a").attr("href") || null;
-  let youtubeId: string | null = null;
-  let embedUrl: string | null = null;
-  if (trailerUrl) {
-    if (trailerUrl.includes("embed/")) {
-      youtubeId = trailerUrl.split("embed/")[1].split("?")[0];
-      embedUrl = trailerUrl;
-    } else if (trailerUrl.includes("v=")) {
-      youtubeId = trailerUrl.split("v=")[1].split("&")[0];
-      embedUrl = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&wmode=opaque&autoplay=1`;
-    }
-  }
+  const youtubeId = youtubeIdFromUrl(trailerUrl);
 
   return {
     mal_id: final_mal_id,
@@ -382,15 +378,9 @@ export function parseAnime(html: string): Anime {
     images,
     trailer: {
       youtube_id: youtubeId,
-      url: trailerUrl?.includes("embed/") ? null : trailerUrl,
-      embed_url: embedUrl,
-      images: {
-        image_url: null,
-        small_image_url: null,
-        medium_image_url: null,
-        large_image_url: null,
-        maximum_image_url: null,
-      },
+      url: youtubeId ? `https://www.youtube.com/watch?v=${youtubeId}` : null,
+      embed_url: trailerUrl,
+      images: youtubeTrailerImages(youtubeId),
     },
     approved: true,
     titles,

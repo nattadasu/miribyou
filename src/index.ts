@@ -27,7 +27,7 @@ import {
 } from "./parsers/anime_episodes";
 import { parseNews } from "./parsers/news";
 import { parseForum } from "./parsers/forum";
-import { parseAnimeVideos } from "./parsers/videos";
+import { parseAnimeVideos, parseAnimeVideosEpisodes } from "./parsers/videos";
 import { parsePictures } from "./parsers/pictures";
 import { parseStatistics } from "./parsers/stats";
 import { parseMoreInfo } from "./parsers/moreinfo";
@@ -694,10 +694,11 @@ app.get("/anime/:id/videos", async (c) => {
 
 app.get("/anime/:id/videos/episodes", async (c) => {
   const id = c.req.param("id");
+    const page = c.req.query("page") || "1";
   try {
-    const html = await fetchMAL(`/anime/${id}/_/video`);
-    const data = parseAnimeVideos(html);
-    return c.json({ data: data.episodes });
+    const html = await fetchMAL(`/anime/${id}/_/video?p=${page}`);
+    const { pagination, data } = parseAnimeVideosEpisodes(html);
+    return c.json({ pagination, data });
   } catch (error: any) {
     const status = error.message.includes("404") ? 404 : 500;
     return c.json(jikanError(status, error.message), status);

@@ -392,6 +392,39 @@ export function ensureMalUrl(url: string | undefined): string {
   return MAL_BASE_URL + url;
 }
 
+export function youtubeIdFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  const re =
+    /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|(?:youtube|youtube-nocookie)\.com\/(?:(?:watch)?\?(?:.*&)?v(?:i)?=|(?:embed|v|vi|user|shorts)\/))([^\?&"'>]{11})/;
+  const m = url.match(re);
+  return m?.[1] ?? null;
+}
+
+export function youtubeTrailerImages(id: string | null): {
+  image_url: string | null;
+  small_image_url: string | null;
+  medium_image_url: string | null;
+  large_image_url: string | null;
+  maximum_image_url: string | null;
+} {
+  if (!id) {
+    return {
+      image_url: null,
+      small_image_url: null,
+      medium_image_url: null,
+      large_image_url: null,
+      maximum_image_url: null,
+    };
+  }
+  return {
+    image_url: `https://img.youtube.com/vi/${id}/default.jpg`,
+    small_image_url: `https://img.youtube.com/vi/${id}/sddefault.jpg`,
+    medium_image_url: `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
+    large_image_url: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+    maximum_image_url: `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+  };
+}
+
 export function jikanError(status: number, message: string, type?: string) {
   const defaultTypes: Record<number, string> = {
     400: "BadRequestException",
