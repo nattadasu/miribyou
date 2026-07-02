@@ -425,6 +425,10 @@ export function youtubeTrailerImages(id: string | null): {
   };
 }
 
+export function pageParam(c: any): number {
+  return parseInt(c.req.query("page") || c.req.query("p") || "1", 10);
+}
+
 export function jikanError(status: number, message: string, type?: string) {
   const defaultTypes: Record<number, string> = {
     400: "BadRequestException",

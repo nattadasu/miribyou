@@ -4,6 +4,7 @@ import { trimTrailingSlash } from "hono/trailing-slash";
 import {
   fetchMAL,
   jikanError,
+  pageParam,
   resolveSearchDate,
   mapConcurrent,
 } from "./utils";
@@ -158,7 +159,7 @@ function calculateAge(
 
 app.get("/anime", async (c) => {
   const q = c.req.query("q") || "";
-  const page = parseInt(c.req.query("page") || "1");
+  const page = pageParam(c);
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
 
@@ -630,10 +631,10 @@ app.get("/anime/:id/staff", async (c) => {
 
 app.get("/anime/:id/episodes", async (c) => {
   const id = c.req.param("id");
-  const page = c.req.query("page") || "1";
+  const page = pageParam(c);
   try {
     const html = await fetchMAL(
-      `/anime/${id}/_/episode?offset=${(parseInt(page) - 1) * 100}`,
+      `/anime/${id}/_/episode?offset=${(page - 1) * 100}`,
     );
     const data = parseAnimeEpisodes(html);
     return c.json(data);
@@ -657,7 +658,7 @@ app.get("/anime/:id/episodes/:episodeId", async (c) => {
 
 app.get("/anime/:id/news", async (c) => {
   const id = c.req.param("id");
-  const page = c.req.query("page") || "1";
+  const page = pageParam(c);
   try {
     const html = await fetchMAL(`/anime/${id}/_/news?p=${page}`);
     const { pagination, data } = parseNews(html);
@@ -694,7 +695,7 @@ app.get("/anime/:id/videos", async (c) => {
 
 app.get("/anime/:id/videos/episodes", async (c) => {
   const id = c.req.param("id");
-    const page = c.req.query("page") || "1";
+  const page = pageParam(c);
   try {
     const html = await fetchMAL(`/anime/${id}/_/video?p=${page}`);
     const { pagination, data } = parseAnimeVideosEpisodes(html);
@@ -767,7 +768,7 @@ app.get("/anime/:id/userupdates", async (c) => {
 
 app.get("/anime/:id/reviews", async (c) => {
   const id = c.req.param("id");
-  const page = c.req.query("page") || "1";
+  const page = pageParam(c);
   const preliminary = c.req.query("preliminary") !== "false";
   const spoilers = c.req.query("spoilers") !== "false";
   try {
@@ -831,7 +832,7 @@ app.get("/anime/:id/streaming", async (c) => {
 });
 app.get("/manga", async (c) => {
   const q = c.req.query("q") || "";
-  const page = parseInt(c.req.query("page") || "1");
+  const page = pageParam(c);
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
 
@@ -1284,7 +1285,7 @@ app.get("/manga/:id/characters", async (c) => {
 
 app.get("/manga/:id/news", async (c) => {
   const id = c.req.param("id");
-  const page = c.req.query("page") || "1";
+  const page = pageParam(c);
   try {
     const html = await fetchMAL(`/manga/${id}/_/news?p=${page}`);
     const { pagination, data } = parseNews(html);
@@ -1369,7 +1370,7 @@ app.get("/manga/:id/userupdates", async (c) => {
 
 app.get("/manga/:id/reviews", async (c) => {
   const id = c.req.param("id");
-  const page = c.req.query("page") || "1";
+  const page = pageParam(c);
   const preliminary = c.req.query("preliminary") !== "false";
   const spoilers = c.req.query("spoilers") !== "false";
   try {
@@ -1522,7 +1523,7 @@ app.get("/seasons", async (c) => {
 });
 
 app.get("/seasons/now", async (c) => {
-  const page = parseInt(c.req.query("page") || "1");
+  const page = pageParam(c);
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
   const filter = c.req.query("filter");
@@ -1693,7 +1694,7 @@ app.get("/seasons/now", async (c) => {
 });
 
 app.get("/seasons/upcoming", async (c) => {
-  const page = parseInt(c.req.query("page") || "1");
+  const page = pageParam(c);
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
   const filter = c.req.query("filter");
@@ -1867,7 +1868,7 @@ app.get("/seasons/upcoming", async (c) => {
 
 app.get("/seasons/:year/:season", async (c) => {
   const { year, season } = c.req.param();
-  const page = parseInt(c.req.query("page") || "1");
+  const page = pageParam(c);
   const limit = parseInt(c.req.query("limit") || "25");
   const hover = c.req.query("hover") === "1" || c.req.query("hover") === "true";
   const filter = c.req.query("filter");
@@ -2041,7 +2042,7 @@ app.get("/seasons/:year/:season", async (c) => {
 
 app.get("/users", async (c) => {
   const q = c.req.query("q");
-  const page = parseInt(c.req.query("page") || "1");
+  const page = pageParam(c);
   const limit = parseInt(c.req.query("limit") || "25");
 
   // Jikan filters
