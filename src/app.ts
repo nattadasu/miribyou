@@ -7,6 +7,7 @@ import {
   pageParam,
   resolveSearchDate,
   mapConcurrent,
+  sanitizeObject,
 } from "./utils.js";
 import pkg from "../package.json" with { type: "json" };
 import {
@@ -81,6 +82,17 @@ app.use("*", async (c, next) => {
       "Vercel-CDN-Cache-Control",
       "public, max-age=86400, s-maxage=86400",
     );
+
+    const contentType = c.res.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      const body = await c.res.json();
+      const sanitized = sanitizeObject(body);
+      c.res = new Response(JSON.stringify(sanitized), {
+        status: c.res.status,
+        statusText: c.res.statusText,
+        headers: c.res.headers,
+      });
+    }
   }
 });
 

@@ -417,6 +417,25 @@ export function youtubeTrailerImages(id: string | null): {
   };
 }
 
+export function sanitizeCRLF(str: string | null | undefined): string | null {
+  if (str == null) return null;
+  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+export function sanitizeObject<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === "string") return sanitizeCRLF(obj) as T;
+  if (Array.isArray(obj)) return obj.map((item) => sanitizeObject(item)) as T;
+  if (typeof obj === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = sanitizeObject(value);
+    }
+    return result as T;
+  }
+  return obj;
+}
+
 export function pageParam(c: any): number {
   return parseInt(c.req.query("page") || c.req.query("p") || "1", 10);
 }
