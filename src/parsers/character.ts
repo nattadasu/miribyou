@@ -8,11 +8,11 @@ import {
 } from "../models/characters.js";
 import { cleanImageUrl, ensureMalUrl, extractMalId } from "../utils.js";
 
-function parseNameKanji(html: string): string | null {
-  const m = html.match(
-    /<h2[^>]*class="normal_header"[^>]*>.*?<small>\s*\(?([^)]*)\)?\s*<\/small>/,
-  );
-  return m ? m[1].trim() : null;
+function parseNameKanji(html: string): string[] {
+  const $ = load(html);
+  const h2Text = $("h2.normal_header").text();
+  const match = h2Text.match(/\(([^)]*)\)/);
+  return match[1].split(" / ").map((n) => n.trim()).filter(Boolean);
 }
 
 function parseFavorites(html: string): number {
@@ -30,6 +30,13 @@ function parseAbout(html: string): string | null {
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ")
+    .replace(/&ndash;/g, "–")
+    .replace(/&mdash;/g, "—")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&ldquo;/g, "“")
+    .replace(/&rdquo;/g, "”")
+    .replace(/&eacute;/g, "é")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
@@ -43,13 +50,12 @@ function parseAbout(html: string): string | null {
 }
 
 function parseNicknames(html: string): string[] {
-  const h1Match = html.match(/<h1[^>]*>.*?<\/h1>/);
-  if (!h1Match) return [];
-  const h1Text = h1Match[0].replace(/<[^>]+>/g, "").trim();
-  const quoteMatch = h1Text.match(/"([^"]+)"/);
+  const $ = load(html);
+  const strongText = $("h1 > strong").text();
+  const quoteMatch = strongText.match(/"([^"]+)"/);
   if (!quoteMatch) return [];
   return quoteMatch[1]
-    .split(",")
+    .split(", ")
     .map((n) => n.trim())
     .filter(Boolean);
 }
@@ -79,8 +85,11 @@ export function parseCharacter(html: string): Character {
       : undefined,
   };
 
-  const nameKanji = parseNameKanji(html);
-  const nicknames = parseNicknames(html);
+  const nameKanjiArray = parseNameKanji(html);
+  const nicknames = [
+    ...parseNicknames(html),
+    ...nameKanjiArray.slice(1),
+  ];
   const about = parseAbout(html);
   const favorites = parseFavorites(html);
 
@@ -89,8 +98,8 @@ export function parseCharacter(html: string): Character {
     url,
     images,
     name,
-    name_kanji: nameKanji,
-    nicknames,
+    name_kanji: nameKanjiArray[0] || null,
+    nicknames: nicknames.length > 0 ? nicknames : [],
     favorites,
     about,
   };
