@@ -146,3 +146,5 @@ vite.config.ts.timestamp-*
 jikan*_ref/
 test_results/
 .wrangler
+.vercel
+.env*

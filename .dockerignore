@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+.wrangler
+.vercel
+test
+test_results
+*.md
+!README.md
+.env
+.env.*
+!.env.example

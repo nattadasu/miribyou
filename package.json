@@ -2,6 +2,7 @@
   "name": "miribyou",
   "version": "4.3.0",
   "private": true,
+  "type": "module",
   "author": "Sultan Iskandar Maulana <https://github.com/nattadasu>",
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
   },
   "dependencies": {
     "cheerio": "^1.2.0",
-    "hono": "^4.12.25"
+    "hono": "^4.12.25",
+    "@hono/node-server": "^1.13.0"
   }
 }
