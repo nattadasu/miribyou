@@ -1,5 +1,6 @@
 import { Anime, Title, DateRange } from "./models/anime.js";
 import { Manga } from "./models/manga.js";
+import { cleanImageUrl } from "./utils.js";
 
 export const ANIME_FIELDS = [
   "id",
@@ -144,16 +145,17 @@ function classifyGenres(
 }
 
 function buildImages(mainPicture: any) {
-  const image_url = mainPicture?.large || mainPicture?.medium || "";
-  const medium = mainPicture?.medium || image_url;
-  const large = mainPicture?.large || image_url;
+  const raw = mainPicture?.medium || mainPicture?.large || "";
+  const base = cleanImageUrl(raw);
+  const small = base.replace(".jpg", "t.jpg");
+  const large = base.replace(".jpg", "l.jpg");
   const toWebp = (url: string) =>
     url.endsWith(".jpg") ? url.replace(".jpg", ".webp") : url;
   return {
-    jpg: { image_url, small_image_url: medium, large_image_url: large },
+    jpg: { image_url: base, small_image_url: small, large_image_url: large },
     webp: {
-      image_url: toWebp(image_url),
-      small_image_url: toWebp(medium),
+      image_url: toWebp(base),
+      small_image_url: toWebp(small),
       large_image_url: toWebp(large),
     },
   };
