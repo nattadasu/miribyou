@@ -78,11 +78,9 @@ export async function fetchMAL(
     const text = await doFetchMAL(url, headers);
     responseCache.set(url, { text, expires: Date.now() + CACHE_TTL_MS });
     return text;
-  })();
+  })().finally(() => requestCache.delete(url));
 
   requestCache.set(url, promise);
-  promise.finally(() => requestCache.delete(url));
-
   return promise;
 }
 
