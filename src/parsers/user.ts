@@ -263,9 +263,17 @@ function parseLastUpdates($: any, selector: string, type: "anime" | "manga") {
         else if (text.includes("Completed")) status = "Completed";
       }
 
-      const scoreText = fnGrey2.text();
-      const scoreMatch = scoreText.match(/Scored\s+(\d+)/);
-      const score = scoreMatch ? parseInt(scoreMatch[1]) : null;
+      const scoreSpan = fnGrey2.find(".score-label");
+      const scoreText = scoreSpan.length > 0 ? scoreSpan.text().trim() : "-";
+      const score = scoreText === "-" || scoreText === "" ? 0 : parseInt(scoreText) || 0;
+
+      const progressSpan = fnGrey2.find(`span.text.${type}:not(.score-label)`);
+      const epSeen = progressSpan.length > 0
+        ? parseInt(progressSpan.text().trim()) || null
+        : null;
+      const nextData = progressSpan[0]?.nextSibling?.data || "";
+      const totalMatch = nextData.match(/^\/(\d+)/);
+      const epTotal = totalMatch ? parseInt(totalMatch[1]) : null;
 
       const dateText = dataEl
         .find(".graph-content span.fn-grey2")
@@ -300,19 +308,12 @@ function parseLastUpdates($: any, selector: string, type: "anime" | "manga") {
         date: date || "",
       };
 
-      const epMatch =
-        statusText.match(/(\d+)\/(\d+)/) ||
-        statusText.match(/(\d+)/) ||
-        dataEl.text().match(/(\d+)\/(\d+)/) ||
-        dataEl.text().match(/(\d+)/);
       if (type === "anime") {
-        res.episodes_seen = epMatch ? parseInt(epMatch[1]) : null;
-        res.episodes_total =
-          epMatch && epMatch[2] ? parseInt(epMatch[2]) : null;
+        res.episodes_seen = epSeen;
+        res.episodes_total = epTotal;
       } else {
-        res.chapters_read = epMatch ? parseInt(epMatch[1]) : null;
-        res.chapters_total =
-          epMatch && epMatch[2] ? parseInt(epMatch[2]) : null;
+        res.chapters_read = epSeen;
+        res.chapters_total = epTotal;
       }
 
       return res;
