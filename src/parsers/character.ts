@@ -12,6 +12,7 @@ function parseNameKanji(html: string): string[] {
   const $ = load(html);
   const h2Text = $("h2.normal_header").text();
   const match = h2Text.match(/\(([^)]*)\)/);
+  if (!match) return [];
   return match[1].split(" / ").map((n) => n.trim()).filter(Boolean);
 }
 
